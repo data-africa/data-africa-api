@@ -10,7 +10,6 @@ from data_africa.core.table_manager import TableManager, table_name
 from data_africa.util.helper import splitter
 from data_africa.attrs import consts
 
-from data_africa.core.api import parse_method_and_val
 from data_africa.core.crosswalker import crosswalk
 from data_africa.core.models import ApiObject
 from data_africa.attrs.views import attr_map
@@ -18,6 +17,31 @@ from data_africa.core.streaming import stream_qry, stream_qry_csv
 from data_africa.core.exceptions import DataAfricaException
 
 from data_africa.database import db
+
+def parse_method_and_val(cond):
+    if cond.startswith("^"):
+        return "startswith", cond[1:], False
+    elif cond.startswith("~^"):
+        return "startswith", cond[2:], True
+    elif cond.endswith("$"):
+        return "endswith", cond[:-1], False
+    elif cond.endswith("~$"):
+        return "endswith", cond[:-2], True
+    elif cond.startswith("str!"):
+        return "ne", str(cond[4:]), False
+    elif cond.startswith("!"):
+        return "ne", int(cond[1:]), False
+    elif cond.startswith(">"):
+        return "gt", int(cond[1:]), False
+    elif cond.startswith("<"):
+        return "lt", int(cond[1:]), False
+    elif cond.startswith("R<"):
+        return "rt", float(cond[2:]), False
+    elif cond.startswith("R>"):
+        return "rg", float(cond[2:]), False
+    else:
+        return "like", cond, False
+
 
 def use_attr_names(qry, cols):
     '''This method will return a query object with outer joins to include
@@ -200,7 +224,7 @@ def make_joins(tables, api_obj, tbl_years):
     '''Generate the joins required to combine tables'''
     my_joins = []
     filts = []
-    already_naics_joined = {}
+
     tbl1 = tables[0]
     for idx, _ in enumerate(tables[:-1]):
         tbl2 = tables[idx + 1]
@@ -227,26 +251,13 @@ def make_joins(tables, api_obj, tbl_years):
         for col in overlap:
             if col == 'year': # or has_same_levels(tbl1, tbl2, col):
                 continue
-            if api_obj.auto_crosswalk:
-                lvls_are_eq = has_same_levels(tbl1, tbl2, col)
-                if col == consts.GEO and not lvls_are_eq:
-                    my_joins += geo_crosswalk_join(tbl1, tbl2, col)
-                elif col == 'naics' and not lvls_are_eq:
-                    my_joins += naics_crosswalk_join(tbl1, tbl2, col, already_naics_joined)
-                elif col == 'soc' and not lvls_are_eq:
-                    my_joins += soc_crosswalk_join(tbl1, tbl2, col)
-                elif col == 'cip' and not lvls_are_eq:
-                    my_joins += cip_crosswalk_join(tbl1, tbl2, col)
-                else:
-                    direct_join = getattr(tbl1, col) == getattr(tbl2, col)
-                    join_clause = and_(join_clause, direct_join)
-            else:
-                direct_join = getattr(tbl1, col) == getattr(tbl2, col)
-                join_clause = and_(join_clause, direct_join)
 
-        if join_clause != True:
-            join_params = {} if api_obj.auto_crosswalk else {"isouter": True, "full": True}
-            my_joins.append([[tbl2, direct_join], join_params])
+            direct_join = getattr(tbl1, col) == getattr(tbl2, col)
+            join_clause = and_(join_clause, direct_join)
+
+        # if join_clause != True:
+            # join_params = {} if api_obj.auto_crosswalk else {"isouter": True, "full": True}
+            # my_joins.append([[tbl2, direct_join], join_params])
 
     return my_joins, filts
 
