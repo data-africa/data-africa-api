@@ -55,12 +55,9 @@ class Crop(BaseAttr):
     parent = db.Column(db.String)
 
 @register
-class Adm0(BaseAttr):
-    __tablename__ = 'geo_adm0'
+class Geo(BaseAttr):
+    __tablename__ = 'geo'
 
-@register
-class Adm1(BaseAttr):
-    __tablename__ = 'geo_adm1'
 
 @register
 class WaterSupply(BaseAttr):

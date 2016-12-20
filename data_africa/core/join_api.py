@@ -27,11 +27,6 @@ def use_attr_names(qry, cols):
     for col in cols:
         full_name = str(col)
         _, var_name = full_name.rsplit(".", 1)
-        if full_name.startswith("pums") and full_name.endswith(".degree"):
-            var_name = "pums_degree"
-        elif full_name.startswith("bls") and (full_name.endswith(".naics")
-                                              or full_name.endswith(".soc")):
-            var_name = "bls_{}".format(var_name)
 
         if var_name in attr_map:
             attr_obj = attr_map[var_name]

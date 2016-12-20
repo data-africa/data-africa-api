@@ -7,3 +7,5 @@ OR = ","
 YEAR = 'year'
 LATEST = 'latest'
 OLDEST = 'oldest'
+IRR = 'irrigated'
+RFD = 'rainfed'

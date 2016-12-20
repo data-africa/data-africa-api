@@ -1,9 +1,7 @@
-from data_africa.cell5m.models import HarvestedArea_Adm0
+from data_africa.cell5m.models import cell5m_models
 
-registered_models = [
-    HarvestedArea_Adm0
-]
-
+registered_models = []
+registered_models += cell5m_models
 
 def register(cls):
     registered_models.append(cls)
