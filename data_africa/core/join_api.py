@@ -122,12 +122,8 @@ def parse_entities(tables, api_obj):
 
     values = set(values)
 
-    col_objs = []
-    for value in values:
-        for table in tables:
-            if hasattr(table, value):
-                val_label = "{}.{}".format(table.full_name(), value)
-                col_objs.append(getattr(table, value).label(val_label))
+    col_objs = [get_column_from_tables(tables, value) for value in values]
+
     return col_objs
 
 def find_overlap(tbl1, tbl2):
