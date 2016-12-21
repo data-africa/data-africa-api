@@ -1,6 +1,6 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
-from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD
+from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
 
 from sqlalchemy.sql import func
 
@@ -12,14 +12,13 @@ class BaseCell5M(db.Model, BaseModel):
     source_org = 'IFPRI'
 
     @classmethod
-    def crop_filter(cls, level):
-        # TODO tidy the data!
+    def geo_filter(cls, level):
         if level == ALL:
-            return ~cls.crop.endswith("_i_h") & ~cls.crop.endswith("_r_h")
-        elif level == 'irrigated':
-            return cls.crop.endswith("_i_h")
-        elif level == 'rainfed':
-            return cls.crop.endswith("_r_h")
+            return True
+        elif level == ADM0:
+            return cls.geo.startswith("040")
+        elif level == ADM1:
+            return cls.geo.startswith("050")
 
 class HarvestedArea(BaseCell5M):
     __tablename__ = "harvested_area"
@@ -36,8 +35,17 @@ class HarvestedArea(BaseCell5M):
     def get_supported_levels(cls):
         return {
             "geo": [ALL, ADM0, ADM1],
-            "crop": [ALL, IRR, RFD],
+            "crop": [ALL],
+            "water_supply": [ALL, OVERALL, IRR, RFD],
+
         }
+
+    @classmethod
+    def water_supply_filter(cls, level):
+        if level == ALL or not hasattr(cls, "water_supply"):
+            return True
+        else:
+            return cls.water_supply == level
 
 class ValueOfProduction(BaseCell5M):
     __tablename__ = "value_production"
@@ -54,6 +62,7 @@ class ValueOfProduction(BaseCell5M):
         return {
             "geo": [ALL, ADM0, ADM1],
             "crop": [ALL],
+            "water_supply": [ALL, OVERALL],
         }
 
 cell5m_models = [HarvestedArea, ValueOfProduction]
