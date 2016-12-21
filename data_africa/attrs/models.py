@@ -52,4 +52,4 @@ class WaterSupply(BaseAttr):
     __tablename__ = 'water_supply'
 
 def get_mapped_attrs():
-    return [Crop, Geo, WaterSupply]
+    return {"crop": Crop, "geo": Geo, "water_supply": WaterSupply}
