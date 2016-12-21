@@ -8,7 +8,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 CSRF_EN = True
 
 ''' Secret key should be set in environment var '''
-SECRET_KEY = os.environ.get("DATAVIVA_SECRET_KEY", "default-datausa-secret")
+SECRET_KEY = os.environ.get("DATA_AFRICA_SECRET_KEY", "default-da-secret")
 
 ''' Default debugging to True '''
 DEBUG = True

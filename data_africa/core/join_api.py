@@ -248,16 +248,16 @@ def make_joins(tables, api_obj, tbl_years):
 
         join_clause = True
 
-        for col in overlap:
-            if col == 'year': # or has_same_levels(tbl1, tbl2, col):
+        for idx, col in enumerate(overlap):
+            if col == 'year':
                 continue
 
             direct_join = getattr(tbl1, col) == getattr(tbl2, col)
             join_clause = and_(join_clause, direct_join)
 
-        # if join_clause != True:
-            # join_params = {} if api_obj.auto_crosswalk else {"isouter": True, "full": True}
-            # my_joins.append([[tbl2, direct_join], join_params])
+
+        join_params = {"isouter": True, "full": True}
+        my_joins.append([[tbl2, join_clause], join_params])
 
     return my_joins, filts
 
