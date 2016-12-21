@@ -1,9 +1,5 @@
+'''Attribute database models'''
 from data_africa.database import db
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from sqlalchemy import or_, asc
-from data_africa.attrs.consts import OR
-from sqlalchemy.sql import text
 
 
 attr_map = {}
@@ -17,14 +13,6 @@ class BaseAttr(db.Model):
     id = db.Column(db.String(10), primary_key=True)
     name = db.Column(db.String())
     HEADERS = ["id", "name"]
-
-    @classmethod
-    def parents(cls, attr_id):
-        raise Exception("Not implemented!")
-
-    @classmethod
-    def children(cls, attr_id):
-        raise Exception("Not implemented!")
 
     def serialize(self):
         return {key: val for key, val in self.__dict__.items()
