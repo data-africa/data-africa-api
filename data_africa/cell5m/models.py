@@ -26,7 +26,7 @@ class BaseCell5M(db.Model, BaseModel):
         if level == ALL:
             return None
         elif level == 'lowest':
-            return [Crop, Crop.internal_id != 999]
+            return ['cropjoin', Crop, Crop.internal_id != 999]
 
 class HarvestedArea(BaseCell5M):
     __tablename__ = "harvested_area"

@@ -302,7 +302,7 @@ def handle_ordering(tables, api_obj):
     return sort_expr.nullslast()
 
 def process_joined_filters(tables, api_obj, qry):
-    # qry = qry.join(Crop).filter(Crop.internal_id == 999)
+    applied = {}
     for table in tables:
         shows_and_levels = api_obj.shows_and_levels
         filters = []
@@ -313,8 +313,10 @@ def process_joined_filters(tables, api_obj, qry):
                 # expr = func(level)
                 result = func(level)
                 if result:
-                    jtbl, filts = result
-                    qry = qry.join(jtbl).filter(filts)
+                    join_id, jtbl, filts = result
+                    if join_id not in applied:
+                        qry = qry.join(jtbl).filter(filts)
+                        applied[join_id] = True
 
     return qry
 
