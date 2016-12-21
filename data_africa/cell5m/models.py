@@ -1,6 +1,7 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
+from data_africa.attrs.models import Crop
 
 from sqlalchemy.sql import func
 
@@ -20,13 +21,20 @@ class BaseCell5M(db.Model, BaseModel):
         elif level == ADM1:
             return cls.geo.startswith("050")
 
+    @classmethod
+    def crop_filter_join(cls, level):
+        if level == ALL:
+            return None
+        elif level == 'lowest':
+            return [Crop, Crop.internal_id != 999]
+
 class HarvestedArea(BaseCell5M):
     __tablename__ = "harvested_area"
     median_moe = 0
 
     year = db.Column(db.Integer(), primary_key=True)
     geo = db.Column(db.String(), primary_key=True)
-    crop = db.Column(db.String(), primary_key=True)
+    crop = db.Column(db.String(), db.ForeignKey(Crop.id), primary_key=True)
     water_supply = db.Column(db.String(), primary_key=True)
 
     harvested_area = db.Column(db.Integer())
@@ -35,7 +43,7 @@ class HarvestedArea(BaseCell5M):
     def get_supported_levels(cls):
         return {
             "geo": [ALL, ADM0, ADM1],
-            "crop": [ALL],
+            "crop": [ALL, 'lowest'],
             "water_supply": [ALL, OVERALL, IRR, RFD],
 
         }

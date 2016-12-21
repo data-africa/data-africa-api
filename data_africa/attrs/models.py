@@ -1,5 +1,6 @@
 '''Attribute database models'''
 from data_africa.database import db
+from sqlalchemy.dialects import postgresql
 
 
 attr_map = {}
@@ -36,20 +37,19 @@ class ImageAttr(db.Model):
     def data_serialize(self):
         return [self.id, self.name, self.image_link, self.image_author, self.url_name]
 
-@register
 class Crop(BaseAttr):
     __tablename__ = 'crop'
 
     parent = db.Column(db.String)
+    children = db.Column(postgresql.ARRAY(db.String))
+    internal_id = db.Column(db.Integer)
 
-@register
 class Geo(BaseAttr):
     __tablename__ = 'geo'
 
 
-@register
 class WaterSupply(BaseAttr):
     __tablename__ = 'water_supply'
 
 def get_mapped_attrs():
-    return attr_map
+    return [Crop, Geo, WaterSupply]

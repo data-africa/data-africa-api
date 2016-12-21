@@ -72,10 +72,12 @@ def sumlevel_filtering2(table, api_obj):
     filters = []
     for col, level in shows_and_levels.items():
         args = (table, "{}_filter".format(col))
+        join_args = (table, "{}_join_filter".format(col))
         if hasattr(*args):
             func = getattr(*args)
             expr = func(level)
             filters.append(or_(expr, getattr(table, col) == None))
+
     return filters
 
 def multitable_value_filters(tables, api_obj):
@@ -93,6 +95,7 @@ def multitable_value_filters(tables, api_obj):
         if not api_obj.auto_crosswalk:
             filts += gen_combos(related_tables, colname, val)
         else:
+            raise Exception("test this")
             for table in related_tables:
                 if colname == consts.YEAR and val in [consts.LATEST, consts.OLDEST]:
                     years = TableManager.table_years[table_name(table)]
@@ -298,6 +301,23 @@ def handle_ordering(tables, api_obj):
     sort_expr = getattr(my_col, sort)()
     return sort_expr.nullslast()
 
+def process_joined_filters(tables, api_obj, qry):
+    # qry = qry.join(Crop).filter(Crop.internal_id == 999)
+    for table in tables:
+        shows_and_levels = api_obj.shows_and_levels
+        filters = []
+        for col, level in shows_and_levels.items():
+            args = (table, "{}_filter_join".format(col))
+            if hasattr(*args):
+                func = getattr(*args)
+                # expr = func(level)
+                result = func(level)
+                if result:
+                    jtbl, filts = result
+                    qry = qry.join(jtbl).filter(filts)
+
+    return qry
+
 
 def joinable_query(tables, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
@@ -330,6 +350,8 @@ def joinable_query(tables, api_obj, tbl_years, csv_format=False):
         qry = qry.order_by(sort_expr)
 
     qry = qry.filter(*filts)
+
+    qry = process_joined_filters(tables, api_obj, qry)
 
     if api_obj.limit:
         qry = qry.limit(api_obj.limit)
