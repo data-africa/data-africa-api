@@ -69,7 +69,7 @@ class ValueOfProduction(BaseCell5M):
     def get_supported_levels(cls):
         return {
             "geo": [ALL, ADM0, ADM1],
-            "crop": [ALL],
+            "crop": [ALL, 'lowest'],
             "water_supply": [ALL, OVERALL],
         }
 
