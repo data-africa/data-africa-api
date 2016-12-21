@@ -61,7 +61,7 @@ class ValueOfProduction(BaseCell5M):
 
     year = db.Column(db.Integer(), primary_key=True)
     geo = db.Column(db.String(), primary_key=True)
-    crop = db.Column(db.String(), primary_key=True)
+    crop = db.Column(db.String(), db.ForeignKey(Crop.id), primary_key=True)
 
     value_of_production = db.Column(db.Integer())
 
