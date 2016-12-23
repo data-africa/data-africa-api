@@ -317,7 +317,9 @@ def process_joined_filters(tables, api_obj, qry):
                     if join_id not in applied:
                         qry = qry.join(jtbl).filter(filts)
                         applied[join_id] = True
-
+    for table in tables:
+        if hasattr(table, "crosswalk"):
+            qry = table.crosswalk(api_obj, qry)
     return qry
 
 

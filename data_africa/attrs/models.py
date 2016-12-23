@@ -46,6 +46,9 @@ class Crop(BaseAttr):
 
 class Geo(BaseAttr):
     __tablename__ = 'geo'
+    adm0_id = db.Column(db.Integer)
+    adm1_id = db.Column(db.Integer)
+    iso3 = db.Column(db.String)
 
 
 class WaterSupply(BaseAttr):
