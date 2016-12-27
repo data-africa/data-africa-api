@@ -17,7 +17,7 @@ class PovertyXWalk(BaseSpatial):
     __tablename__ = "tmp_test_3"
     median_moe = 0
 
-    poverty_geo_id = db.Column(db.String, db.ForeignKey(PovertyGeo.id), primary_key=True)
-    geo_id = db.Column(db.String, db.ForeignKey(Geo.id), primary_key=True)
+    poverty_geo = db.Column(db.String, db.ForeignKey(PovertyGeo.id), primary_key=True)
+    geo = db.Column(db.String, db.ForeignKey(Geo.id), primary_key=True)
     st_area = db.Column(db.Float())
     pct_overlap = db.Column(db.Float())

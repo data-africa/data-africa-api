@@ -39,10 +39,10 @@ class Survey(BasePoverty):
 
     @staticmethod
     def crosswalk(api_obj, qry):
-        qry = qry.join(PovertyXWalk, PovertyXWalk.poverty_geo_id == Survey.poverty_geo)
+        qry = qry.join(PovertyXWalk, PovertyXWalk.poverty_geo == Survey.poverty_geo)
         if "poverty_geo" in api_obj.vars_and_vals:
             pov_geos = api_obj.vars_and_vals["poverty_geo"].split(",")
-            qry = qry.filter(or_(PovertyXWalk.geo_id.in_(pov_geos), PovertyXWalk.poverty_geo_id.in_(pov_geos)))
+            qry = qry.filter(or_(PovertyXWalk.geo.in_(pov_geos), PovertyXWalk.poverty_geo.in_(pov_geos)))
         return qry
 
     @classmethod
