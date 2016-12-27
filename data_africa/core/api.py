@@ -260,7 +260,7 @@ def query(table, api_obj, stream=False):
             if api_obj.order == 'abs(pct_change)':
                 pass # allow this
             else:
-                raise DataUSAException("Bad order parameter", api_obj.order)
+                raise DataAfricaException("Bad order parameter", api_obj.order)
         sort_stmt = text("{} {} NULLS LAST".format(api_obj.order, sort))
         qry = qry.order_by(sort_stmt)
     if api_obj.limit:
