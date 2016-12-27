@@ -1,7 +1,7 @@
 '''Attribute database models'''
 from data_africa.database import db
 from sqlalchemy.dialects import postgresql
-
+from sqlalchemy.orm import relationship
 
 attr_map = {}
 
@@ -43,6 +43,9 @@ class Crop(BaseAttr):
     parent = db.Column(db.String)
     children = db.Column(postgresql.ARRAY(db.String))
     internal_id = db.Column(db.Integer)
+
+class PovertyGeo(BaseAttr):
+    iso3 = db.Column(db.String)
 
 class Geo(BaseAttr):
     __tablename__ = 'geo'
