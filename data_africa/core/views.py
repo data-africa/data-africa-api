@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 
 from data_africa.core import table_manager
-from data_africa.core import join_api
+from data_africa.core import join_api, api
 from data_africa.core.models import ApiObject
 from data_africa.core.crosswalker import crosswalk
 from data_africa.core.exceptions import DataAfricaException
@@ -57,7 +57,13 @@ def build_api_obj(default_limit=None):
 @mod.route("/v1/")
 @mod.route("/csv/", defaults={'csv': True})
 def api_view(csv=None):
-    raise Exception("deprecated!")
+    api_obj = build_api_obj()
+    table_list = manager.all_tables(api_obj)
+    table = manager.select_best(table_list, api_obj)
+    api_obj.capture_logic(table_list)
+    api_obj = manager.crosswalk(table, api_obj)
+    data = api.query(table, api_obj, stream=csv)
+    return data
 
 @mod.route("/join/")
 @mod.route("/join/csv/", defaults={'csv': True})
