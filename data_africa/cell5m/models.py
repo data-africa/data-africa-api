@@ -1,7 +1,7 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
-from data_africa.attrs.models import Crop
+from data_africa.attrs.models import Crop, Geo
 
 from sqlalchemy.sql import func
 
@@ -33,7 +33,7 @@ class HarvestedArea(BaseCell5M):
     median_moe = 0
 
     year = db.Column(db.Integer(), primary_key=True)
-    geo = db.Column(db.String(), primary_key=True)
+    geo = db.Column(db.String(), db.ForeignKey(Geo.id), primary_key=True)
     crop = db.Column(db.String(), db.ForeignKey(Crop.id), primary_key=True)
     water_supply = db.Column(db.String(), primary_key=True)
 
@@ -60,7 +60,7 @@ class ValueOfProduction(BaseCell5M):
     median_moe = 0
 
     year = db.Column(db.Integer(), primary_key=True)
-    geo = db.Column(db.String(), primary_key=True)
+    geo = db.Column(db.String(), db.ForeignKey(Geo.id), primary_key=True)
     crop = db.Column(db.String(), db.ForeignKey(Crop.id), primary_key=True)
 
     value_of_production = db.Column(db.Integer())
