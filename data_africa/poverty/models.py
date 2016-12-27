@@ -4,7 +4,7 @@ from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
 from data_africa.spatial.models import PovertyXWalk
 from data_africa.attrs.models import Geo
 
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from sqlalchemy.sql import func
 
 class BasePoverty(db.Model, BaseModel):
