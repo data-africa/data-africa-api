@@ -33,27 +33,22 @@ class Survey(BasePoverty):
     median_moe = 0
 
     year = db.Column(db.Integer(), primary_key=True)
-    iso3 = db.Column(db.String(), primary_key=True)
-    svyl1cd = db.Column(db.String(), primary_key=True)
+    poverty_geo = db.Column(db.String(), primary_key=True)
 
     sevpov_ppp1 = db.Column(db.String)
 
     @staticmethod
     def crosswalk(api_obj, qry):
-        qry = qry.join(PovertyXWalk, and_(PovertyXWalk.iso3 == Survey.iso3,
-                       PovertyXWalk.svyl1cd == Survey.svyl1cd))
-        qry = qry.join(Geo, and_(PovertyXWalk.adm0_code == Geo.adm0_id,
-                       PovertyXWalk.adm1_code == Geo.adm1_id))
-        qry = qry.filter(Geo.id == '050AF0009401324')
-        #, Survey.svyl1cd == PovertyXWalk.svyl1cd])
-        # qry = qry.join(Geo, Geo.iso3 == Survey.iso3).filter()
-        # raise Exception(qry)
+        qry = qry.join(PovertyXWalk, PovertyXWalk.poverty_geo_id == Survey.poverty_geo)
+        if "poverty_geo" in api_obj.vars_and_vals:
+            pov_geos = api_obj.vars_and_vals["poverty_geo"].split(",")
+            qry = qry.filter(or_(PovertyXWalk.geo_id.in_(pov_geos), PovertyXWalk.poverty_geo_id.in_(pov_geos)))
         return qry
 
     @classmethod
     def get_supported_levels(cls):
         return {
-            "iso3": [ALL, ADM0, ADM1],
+            "poverty_geo": [ALL, ADM0, ADM1],
         }
 
 poverty_models = [Survey]
