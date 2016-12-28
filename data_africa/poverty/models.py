@@ -3,9 +3,10 @@ from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
 from data_africa.spatial.models import PovertyXWalk
 from data_africa.attrs.models import Geo
+from sqlalchemy.orm import column_property
 
 from sqlalchemy import and_, or_
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, select
 
 class BasePoverty(db.Model, BaseModel):
     __abstract__ = True
@@ -34,7 +35,7 @@ class Survey(BasePoverty):
 
     year = db.Column(db.Integer(), primary_key=True)
     poverty_geo = db.Column(db.String(), primary_key=True)
-
+    geo = column_property(PovertyXWalk.geo)
     sevpov_ppp1 = db.Column(db.String)
 
     @staticmethod
