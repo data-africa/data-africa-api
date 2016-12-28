@@ -370,6 +370,8 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
                 qry = qry.join(table_to_join, join_info, **kwargs)
             else:
                 raise NotImplementedError("Unhandled join case!")
+    if not qry and len(tables) == 1:
+        qry = tables[0].query
 
     qry = qry.with_entities(*cols)
 
