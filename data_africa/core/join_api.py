@@ -342,14 +342,8 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
     cols = parse_entities(tables, api_obj)
     tables = sorted(tables, key=lambda x: x.full_name())
-    # qry = db.session.query(tables[0])
     qry = None
-    # from_table = tables[0]
     joined_tables = []
-
-    # qry = qry.select_from(from_table)
-
-    # my_joins, filts = make_joins(tables, api_obj, tbl_years)
     filts = []
 
     for table in tables:
@@ -362,7 +356,6 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
             kwargs = {} #{"full": True, "isouter": True}
             tbl_a, tbl_b = involved_tables
             if not joined_tables:
-                # raise Exception(tbl_b)
                 qry = db.session.query(tbl_a).select_from(tbl_a)
                 table_to_join = tbl_b
                 joined_tables += [tbl_a.full_name(), tbl_b.full_name()]
@@ -376,23 +369,26 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
                 joined_tables += [tbl_b.full_name()]
                 qry = qry.join(table_to_join, join_info, **kwargs)
             else:
-                raise Exception("Whaaaat? Here!")
-            # table_to_join = tbl_a if tbl_b.full_name() == tables[0].full_name() else tbl_b
-
+                raise NotImplementedError("Unhandled join case!")
 
     qry = qry.with_entities(*cols)
 
-    # if api_obj.order:
-        # sort_expr = handle_ordering(tables, api_obj)
-        # qry = qry.order_by(sort_expr)
+    if api_obj.order:
+        sort_expr = handle_ordering(tables, api_obj)
+        qry = qry.order_by(sort_expr)
 
-    # qry = qry.filter(*filts)
+    filts += where_filters(tables, api_obj)
+
+    for table in tables:
+        filts += sumlevel_filtering2(table, api_obj)
+
+    qry = qry.filter(*filts)
 
     if api_obj.limit:
         qry = qry.limit(api_obj.limit)
 
-    # if api_obj.offset:
-        # qry = qry.offset(api_obj.offset)
+    if api_obj.offset:
+        qry = qry.offset(api_obj.offset)
 
     if csv_format:
         return stream_qry_csv(cols, qry, api_obj)
