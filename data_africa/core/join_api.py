@@ -15,6 +15,7 @@ from data_africa.core.models import ApiObject
 from data_africa.attrs.views import attr_map
 from data_africa.core.streaming import stream_qry, stream_qry_csv
 from data_africa.core.exceptions import DataAfricaException
+from data_africa.core import get_columns
 
 from data_africa.database import db
 
@@ -132,8 +133,8 @@ def parse_entities(tables, api_obj):
 def find_overlap(tbl1, tbl2):
     '''Given two table objects, determine the set of intersecting columns by
     column name'''
-    cols1 = [c.key for c in tbl1.__table__.columns]
-    cols2 = [c.key for c in tbl2.__table__.columns]
+    cols1 = [c.key for c in get_columns(tbl1)]
+    cols2 = [c.key for c in get_columns(tbl2)]
     myset = set(cols1).intersection(cols2)
     return myset
 

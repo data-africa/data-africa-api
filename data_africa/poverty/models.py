@@ -3,7 +3,7 @@ from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
 from data_africa.spatial.models import PovertyXWalk
 from data_africa.attrs.models import Geo
-from sqlalchemy.orm import column_property
+from sqlalchemy.orm import column_property, aliased
 
 from sqlalchemy import and_, or_
 from sqlalchemy.sql import func, select
@@ -20,9 +20,9 @@ class BasePoverty(db.Model, BaseModel):
         if level == ALL:
             return True
         elif level == ADM0:
-            return cls.geo.startswith("040")
+            return cls.poverty_geo.startswith("040")
         elif level == ADM1:
-            return cls.geo.startswith("050")
+            return cls.poverty_geo.startswith("050")
 
     @classmethod
     def year_filter(cls, level):
@@ -40,7 +40,8 @@ class Survey(BasePoverty):
 
     @staticmethod
     def crosswalk(api_obj, qry):
-        qry = qry.join(PovertyXWalk, PovertyXWalk.poverty_geo == Survey.poverty_geo)
+        aliased_xwalk = aliased(PovertyXWalk)
+        qry = qry.join(aliased_xwalk, aliased_xwalk.poverty_geo == Survey.poverty_geo)
         if "poverty_geo" in api_obj.vars_and_vals:
             pov_geos = api_obj.vars_and_vals["poverty_geo"].split(",")
             qry = qry.filter(or_(PovertyXWalk.geo.in_(pov_geos), PovertyXWalk.poverty_geo.in_(pov_geos)))
@@ -50,6 +51,7 @@ class Survey(BasePoverty):
     def get_supported_levels(cls):
         return {
             "poverty_geo": [ALL, ADM0, ADM1],
+            "geo": [ALL, ADM0, ADM1],
         }
 
 poverty_models = [Survey]
