@@ -39,7 +39,13 @@ class Survey(BasePoverty):
     year = db.Column(db.Integer(), primary_key=True)
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
-    sevpov_ppp1 = db.Column(db.String)
+    sevpov_ppp1 = db.Column(db.Float)
+    sevpov_ppp2 = db.Column(db.Float)
+    povgap_ppp1 = db.Column(db.Float)
+    povgap_ppp2 = db.Column(db.Float)
+    gini = db.Column(db.Float)
+    hc_poor1 = db.Column(db.Float)
+    hc_poor2 = db.Column(db.Float)
 
     @staticmethod
     def crosswalk():
