@@ -353,7 +353,7 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     if joins:
         while joins:
             involved_tables, join_info = joins.pop(0)
-            kwargs = {} #{"full": True, "isouter": True}
+            kwargs = {"full": True} #{"full": True, "isouter": True}
             tbl_a, tbl_b = involved_tables
             if not joined_tables:
                 qry = db.session.query(tbl_a).select_from(tbl_a)
@@ -379,6 +379,7 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
         sort_expr = handle_ordering(tables, api_obj)
         qry = qry.order_by(sort_expr)
 
+    filts += multitable_value_filters(tables, api_obj)
     filts += where_filters(tables, api_obj)
 
     for table in tables:

@@ -135,7 +135,8 @@ class TableManager(object):
                 # TODO alias?
                 cond = True
                 for col in overlap:
-                    cond = and_(cond, getattr(cand_tbl, col) == getattr(best_tbl, col))
+                    if col not in ['year']:
+                        cond = and_(cond, getattr(cand_tbl, col) == getattr(best_tbl, col))
                 join_args = [[(cand_tbl, best_tbl), cond]]
                 return cand_tbl, overlap, join_args
         raise Exception("fail!", tables_to_use, top_choices)
