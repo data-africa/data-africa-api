@@ -2,8 +2,8 @@ from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
 from data_africa.attrs.models import Crop, Geo
+from sqlalchemy.ext.declarative import declared_attr
 
-from sqlalchemy.sql import func
 
 class BaseCell5M(db.Model, BaseModel):
     __abstract__ = True
@@ -11,6 +11,18 @@ class BaseCell5M(db.Model, BaseModel):
     source_title = 'CELL5m'
     source_link = 'http://www.harvestchoice.org/'
     source_org = 'IFPRI'
+
+    @declared_attr
+    def crop(cls):
+        return db.Column(db.String(), db.ForeignKey(Crop.id), primary_key=True)
+
+    @declared_attr
+    def geo(cls):
+        return db.Column(db.String(), db.ForeignKey(Geo.id), primary_key=True)
+
+    @declared_attr
+    def year(cls):
+        return db.Column(db.Integer(), primary_key=True)
 
     @classmethod
     def geo_filter(cls, level):
@@ -32,9 +44,6 @@ class HarvestedArea(BaseCell5M):
     __tablename__ = "harvested_area"
     median_moe = 0
 
-    year = db.Column(db.Integer(), primary_key=True)
-    geo = db.Column(db.String(), db.ForeignKey(Geo.id), primary_key=True)
-    crop = db.Column(db.String(), db.ForeignKey(Crop.id), primary_key=True)
     water_supply = db.Column(db.String(), primary_key=True)
 
     harvested_area = db.Column(db.Integer())
@@ -58,10 +67,6 @@ class HarvestedArea(BaseCell5M):
 class ValueOfProduction(BaseCell5M):
     __tablename__ = "value_production"
     median_moe = 0
-
-    year = db.Column(db.Integer(), primary_key=True)
-    geo = db.Column(db.String(), db.ForeignKey(Geo.id), primary_key=True)
-    crop = db.Column(db.String(), db.ForeignKey(Crop.id), primary_key=True)
 
     value_of_production = db.Column(db.Integer())
 

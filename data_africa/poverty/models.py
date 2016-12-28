@@ -10,8 +10,6 @@ from sqlalchemy import and_, or_
 from sqlalchemy import tuple_
 from sqlalchemy.sql import func, select
 
-# aliased_xwalk = aliased(PovertyXWalk)
-
 
 class BasePoverty(db.Model, BaseModel):
     __abstract__ = True
