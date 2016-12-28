@@ -1,11 +1,13 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
+from data_africa.attrs.consts import LATEST_BY_GEO
 from data_africa.spatial.models import PovertyXWalk
 from data_africa.attrs.models import Geo
 from sqlalchemy.orm import column_property
 
 from sqlalchemy import and_, or_
+from sqlalchemy import tuple_
 from sqlalchemy.sql import func, select
 
 # aliased_xwalk = aliased(PovertyXWalk)
@@ -29,8 +31,20 @@ class BasePoverty(db.Model, BaseModel):
 
     @classmethod
     def year_filter(cls, level):
-        raise Exception("figre me out!")
-    #     if level == ALL:
+        if level == ALL:
+            return True
+        elif level == LATEST_BY_GEO:
+            selector = cls.query.with_entities(func.max(cls.year), cls.poverty_geo).group_by(cls.poverty_geo)
+            return tuple_(cls.year, cls.poverty_geo).in_(selector)
+
+
+    @classmethod
+    def get_supported_levels(cls):
+        return {
+            "year": [ALL, LATEST_BY_GEO],
+            "poverty_geo": [ALL, ADM0, ADM1],
+            "geo": [ALL, ADM0, ADM1],
+        }
 
 class Survey(BasePoverty):
     __tablename__ = "survey"
@@ -58,11 +72,5 @@ class Survey(BasePoverty):
             # qry = qry.filter(or_(PovertyXWalk.geo.in_(pov_geos), PovertyXWalk.poverty_geo.in_(pov_geos)))
         # return qry
 
-    @classmethod
-    def get_supported_levels(cls):
-        return {
-            "poverty_geo": [ALL, ADM0, ADM1],
-            "geo": [ALL, ADM0, ADM1],
-        }
 
 poverty_models = [Survey]
