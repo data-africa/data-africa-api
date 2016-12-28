@@ -1,9 +1,9 @@
 import operator
 
-from sqlalchemy import distinct
+from sqlalchemy import distinct, and_
 from sqlalchemy.sql import func
 
-from data_africa.core import get_columns
+from data_africa.core import get_columns, str_tbl_columns
 from data_africa.core.registrar import registered_models
 from data_africa.core.exceptions import DataAfricaException
 from data_africa.core import crosswalker
@@ -120,6 +120,59 @@ class TableManager(object):
             # remove the acquired columns from the universe
             universe = universe - set(tmp_cols)
         return tables_to_use
+
+    @staticmethod
+    def find_max_overlap(tables_to_use, top_choices):
+        for cand_tbl, size_overlap in top_choices:
+            max_overlap = 0
+            best_tbl = None
+            for tbl in tables_to_use:
+                overlap = set(str_tbl_columns(tbl)).intersection(str_tbl_columns(cand_tbl))
+                if overlap > max_overlap:
+                    max_overlap = overlap
+                    best_tbl = tbl
+            if best_tbl:
+                # TODO alias?
+                cond = True
+                for col in overlap:
+                    cond = and_(cond, getattr(cand_tbl, col) == getattr(best_tbl, col))
+                join_args = [[(cand_tbl, best_tbl), cond]]
+                return cand_tbl, overlap, join_args
+        raise Exception("fail!", tables_to_use, top_choices)
+
+    @classmethod
+    def required_table_joins(cls, api_obj):
+        '''Given a list of X, do Y'''
+        vars_needed = api_obj.vars_needed + api_obj.where_vars()
+        if api_obj.order and api_obj.order in cls.possible_variables:
+            vars_needed = vars_needed + [api_obj.order]
+        universe = set(vars_needed)
+        tables_to_use = []
+        table_cols = []
+        join_args = []
+        # Make a set of the variables that will be needed to answer the query
+        while universe:
+            # first find the tables with biggest overlap
+            candidates = cls.list_partial_tables(universe, api_obj)
+            top_choices = sorted(candidates.items(), key=operator.itemgetter(1),
+                                 reverse=True)
+            # ensure the tables are joinable, for now that means
+            # having atleast one column with the same name
+            if tables_to_use:
+                tbl, col_overlap, tmp_joins_args = cls.find_max_overlap(tables_to_use, top_choices)
+                join_args += tmp_joins_args
+            else:
+                tbl = top_choices[0][0]
+            tables_to_use.append(tbl)
+            universe = universe - set(str_tbl_columns(tbl))
+            # if join_args:
+                # raise Exception(tables_to_use)
+            # tmp_cols = [str(c.key) for c in get_columns(tbl)]
+            # table_cols += tmp_cols
+            # remove the acquired columns from the universe
+            # universe = universe - set(tmp_cols)
+        # raise Exception(tables_to_use)
+        return tables_to_use, join_args
 
     @classmethod
     def list_partial_tables(cls, vars_needed, api_obj):

@@ -220,6 +220,20 @@ def where_filters(tables, api_obj):
                 filts.append(filt)
     return filts
 
+
+# def make_joins2(tables, api_obj, tbl_years):
+#     needing_join = [t.full_name() for t in tables[:-1]]
+#     my_joins = []
+#     filts = []
+#
+#     for tbl1 in tables:
+#         if tbl1.full_name() in needing_join:
+#             for tbl2: in tables:
+#                 if tbl1 != tbl2:
+#
+#
+#     return my_joins, filts
+
 def make_joins(tables, api_obj, tbl_years):
     '''Generate the joins required to combine tables'''
     my_joins = []
@@ -318,51 +332,67 @@ def process_joined_filters(tables, api_obj, qry):
                     if join_id not in applied:
                         qry = qry.join(jtbl).filter(filts)
                         applied[join_id] = True
-    for table in tables:
-        if hasattr(table, "crosswalk"):
-            qry = table.crosswalk(api_obj, qry)
+    # for table in tables:
+    #     if hasattr(table, "crosswalk"):
+    #         qry = table.crosswalk(api_obj, qry)
     return qry
 
 
-def joinable_query(tables, api_obj, tbl_years, csv_format=False):
+def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
     cols = parse_entities(tables, api_obj)
     tables = sorted(tables, key=lambda x: x.full_name())
-    qry = db.session.query(*tables)
-    qry = qry.select_from(tables[0])
+    # qry = db.session.query(tables[0])
+    qry = None
+    # from_table = tables[0]
+    joined_tables = []
 
-    my_joins, filts = make_joins(tables, api_obj, tbl_years)
+    # qry = qry.select_from(from_table)
 
-    if my_joins:
-        for join_info, kwargs in my_joins:
-            qry = qry.join(*join_info, **kwargs)
+    # my_joins, filts = make_joins(tables, api_obj, tbl_years)
+    filts = []
 
-    if api_obj.display_names:
-        qry, cols = use_attr_names(qry, cols)
+    for table in tables:
+        if hasattr(table, "crosswalk"):
+            joins.insert(0, table.crosswalk())
+
+    if joins:
+        while joins:
+            involved_tables, join_info = joins.pop(0)
+            kwargs = {} #{"full": True, "isouter": True}
+            tbl_a, tbl_b = involved_tables
+            if not joined_tables:
+                # raise Exception(tbl_b)
+                qry = db.session.query(tbl_a).select_from(tbl_a)
+                table_to_join = tbl_b
+                joined_tables += [tbl_a.full_name(), tbl_b.full_name()]
+                qry = qry.join(table_to_join, join_info, **kwargs)
+            elif tbl_b.full_name() in joined_tables and tbl_a.full_name() not in joined_tables:
+                table_to_join = tbl_a
+                joined_tables += [tbl_a.full_name()]
+                qry = qry.join(table_to_join, join_info, **kwargs)
+            elif tbl_a.full_name() in joined_tables and tbl_b.full_name() not in joined_tables:
+                table_to_join = tbl_b
+                joined_tables += [tbl_b.full_name()]
+                qry = qry.join(table_to_join, join_info, **kwargs)
+            else:
+                raise Exception("Whaaaat? Here!")
+            # table_to_join = tbl_a if tbl_b.full_name() == tables[0].full_name() else tbl_b
 
 
     qry = qry.with_entities(*cols)
 
-    filts += multitable_value_filters(tables, api_obj)
-    filts += where_filters(tables, api_obj)
+    # if api_obj.order:
+        # sort_expr = handle_ordering(tables, api_obj)
+        # qry = qry.order_by(sort_expr)
 
-    if not api_obj.auto_crosswalk:
-        for table in tables:
-            filts += sumlevel_filtering2(table, api_obj)
-
-    if api_obj.order:
-        sort_expr = handle_ordering(tables, api_obj)
-        qry = qry.order_by(sort_expr)
-
-    qry = qry.filter(*filts)
-
-    qry = process_joined_filters(tables, api_obj, qry)
+    # qry = qry.filter(*filts)
 
     if api_obj.limit:
         qry = qry.limit(api_obj.limit)
 
-    if api_obj.offset:
-        qry = qry.offset(api_obj.offset)
+    # if api_obj.offset:
+        # qry = qry.offset(api_obj.offset)
 
     if csv_format:
         return stream_qry_csv(cols, qry, api_obj)

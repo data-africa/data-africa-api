@@ -71,8 +71,9 @@ def api_join_view(csv=None):
     api_obj = build_api_obj(default_limit=10000)
     if api_obj.limit and api_obj.limit > 80000:
         raise DataAfricaException("Limit parameter must be less than 80,000")
-    tables = manager.required_tables(api_obj)
-    data = join_api.joinable_query(tables, api_obj, manager.table_years, csv_format=csv)
+    tables, joins = manager.required_table_joins(api_obj)
+    data = join_api.joinable_query(tables, joins, api_obj, manager.table_years,
+                                   csv_format=csv)
     return data
 
 

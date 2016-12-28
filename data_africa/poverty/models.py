@@ -3,10 +3,13 @@ from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
 from data_africa.spatial.models import PovertyXWalk
 from data_africa.attrs.models import Geo
-from sqlalchemy.orm import column_property, aliased
+from sqlalchemy.orm import column_property
 
 from sqlalchemy import and_, or_
 from sqlalchemy.sql import func, select
+
+# aliased_xwalk = aliased(PovertyXWalk)
+
 
 class BasePoverty(db.Model, BaseModel):
     __abstract__ = True
@@ -39,13 +42,15 @@ class Survey(BasePoverty):
     sevpov_ppp1 = db.Column(db.String)
 
     @staticmethod
-    def crosswalk(api_obj, qry):
-        aliased_xwalk = aliased(PovertyXWalk)
-        qry = qry.join(aliased_xwalk, aliased_xwalk.poverty_geo == Survey.poverty_geo)
-        if "poverty_geo" in api_obj.vars_and_vals:
-            pov_geos = api_obj.vars_and_vals["poverty_geo"].split(",")
-            qry = qry.filter(or_(PovertyXWalk.geo.in_(pov_geos), PovertyXWalk.poverty_geo.in_(pov_geos)))
-        return qry
+    def crosswalk():
+        cond = PovertyXWalk.poverty_geo == Survey.poverty_geo
+        involved_tables = (PovertyXWalk, Survey)
+        return [involved_tables, cond]
+        # qry = qry.join(aliased_xwalk, aliased_xwalk.poverty_geo == Survey.poverty_geo)
+        # if "poverty_geo" in api_obj.vars_and_vals:
+            # pov_geos = api_obj.vars_and_vals["poverty_geo"].split(",")
+            # qry = qry.filter(or_(PovertyXWalk.geo.in_(pov_geos), PovertyXWalk.poverty_geo.in_(pov_geos)))
+        # return qry
 
     @classmethod
     def get_supported_levels(cls):
