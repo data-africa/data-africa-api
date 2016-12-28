@@ -1,7 +1,7 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
-from data_africa.attrs.consts import LATEST_BY_GEO, GENDER
+from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RURAL
 from data_africa.spatial.models import PovertyXWalk
 from data_africa.attrs.models import Geo
 from sqlalchemy.orm import column_property
@@ -26,6 +26,7 @@ class BasePoverty(db.Model, BaseModel):
     povgap_ppp2 = db.Column(db.Float)
     hc_poor1 = db.Column(db.Float)
     hc_poor2 = db.Column(db.Float)
+    gini = db.Column(db.Float)
 
     @classmethod
     def geo_filter(cls, level):
@@ -67,7 +68,6 @@ class Survey(BasePoverty):
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
 
-    gini = db.Column(db.Float)
 
 
 class SurveyByGender(BasePoverty):
@@ -84,4 +84,18 @@ class SurveyByGender(BasePoverty):
         base_levels = super(SurveyByGender, cls).get_supported_levels()
         return dict(base_levels, **{GENDER: ALL})
 
-poverty_models = [Survey, SurveyByGender]
+class SurveyUrbanRural(BasePoverty):
+    __tablename__ = "survey_urban_rural"
+    median_moe = 2
+
+    year = db.Column(db.Integer(), primary_key=True)
+    rural = db.Column(db.String(), primary_key=True)
+    poverty_geo = db.Column(db.String(), primary_key=True)
+    geo = column_property(PovertyXWalk.geo)
+
+    @classmethod
+    def get_supported_levels(cls):
+        base_levels = super(SurveyUrbanRural, cls).get_supported_levels()
+        return dict(base_levels, **{RURAL: ALL})
+
+poverty_models = [Survey, SurveyByGender, SurveyUrbanRural]
