@@ -385,6 +385,8 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     for table in tables:
         filts += sumlevel_filtering2(table, api_obj)
 
+    qry = process_joined_filters(tables, api_obj, qry)
+
     qry = qry.filter(*filts)
 
     if api_obj.limit:
