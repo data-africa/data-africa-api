@@ -1,12 +1,14 @@
 '''Attribute database models'''
 from data_africa.database import db
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import relationship
+
 
 attr_map = {}
 
+
 def register(cls):
     attr_map[cls.__tablename__] = cls
+
 
 class BaseAttr(db.Model):
     __abstract__ = True
@@ -26,6 +28,7 @@ class BaseAttr(db.Model):
         return '<{}, id: {}, name: {}>'.format(self.__class__,
                                                self.id, self.name)
 
+
 class ImageAttr(db.Model):
     __abstract__ = True
     image_link = db.Column(db.String)
@@ -35,7 +38,9 @@ class ImageAttr(db.Model):
     HEADERS = ["id", "name", "image_link", "image_author", "url_name"]
 
     def data_serialize(self):
-        return [self.id, self.name, self.image_link, self.image_author, self.url_name]
+        return [self.id, self.name, self.image_link, self.image_author,
+                self.url_name]
+
 
 class Crop(BaseAttr):
     __tablename__ = 'crop'
@@ -44,8 +49,10 @@ class Crop(BaseAttr):
     children = db.Column(postgresql.ARRAY(db.String))
     internal_id = db.Column(db.Integer)
 
+
 class PovertyGeo(BaseAttr):
     iso3 = db.Column(db.String)
+
 
 class Geo(BaseAttr):
     __tablename__ = 'geo'
@@ -56,6 +63,7 @@ class Geo(BaseAttr):
 
 class WaterSupply(BaseAttr):
     __tablename__ = 'water_supply'
+
 
 def get_mapped_attrs():
     return {"crop": Crop, "geo": Geo, "water_supply": WaterSupply}

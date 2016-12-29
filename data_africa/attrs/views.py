@@ -1,13 +1,12 @@
-import re
-from data_africa import app
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, request, jsonify
+
 
 mod = Blueprint('attrs', __name__, url_prefix='/attrs')
 
 from data_africa.attrs.models import get_mapped_attrs
-from data_africa.attrs.consts import ALL
 
 attr_map = get_mapped_attrs()
+
 
 def show_attrs(attr_obj, sumlevels=None):
     if sumlevels is not None:
@@ -24,6 +23,7 @@ def show_attrs(attr_obj, sumlevels=None):
             headers = obj.keys()
     return jsonify(data=data, headers=headers)
 
+
 @mod.route("/<kind>/")
 def attrs(kind):
     if kind in attr_map:
@@ -33,17 +33,20 @@ def attrs(kind):
         return show_attrs(attr_obj, sumlevels=sumlevels)
     raise Exception("Invalid attribute type.")
 
+
 @mod.route("/<kind>/<attr_id>/")
 def attrs_by_id(kind, attr_id):
     if kind in attr_map:
         attr_obj = attr_map[kind]
         if kind in ["naics", "soc"]:
-            aid_obj = attr_obj.query.filter_by(id=attr_id).order_by(attr_obj.level.asc()).first()
+            aid_obj = attr_obj.query.filter_by(id=attr_id).order_by(
+                        attr_obj.level.asc()).first()
         else:
             aid_obj = attr_obj.query.get(attr_id)
         tmp = aid_obj.serialize()
         return jsonify(data=[tmp.values()], headers=tmp.keys())
     raise Exception("Invalid attribute type.")
+
 
 @mod.route("/list/")
 def attrs_list():
