@@ -1,14 +1,12 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
-from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
+from data_africa.attrs.consts import ALL, ADM0, ADM1
 from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RURAL
 from data_africa.spatial.models import PovertyXWalk
-from data_africa.attrs.models import Geo
 from sqlalchemy.orm import column_property
 
-from sqlalchemy import and_, or_
 from sqlalchemy import tuple_
-from sqlalchemy.sql import func, select
+from sqlalchemy.sql import func
 
 
 class BasePoverty(db.Model, BaseModel):
@@ -40,9 +38,10 @@ class BasePoverty(db.Model, BaseModel):
         if level == ALL:
             return True
         elif level == LATEST_BY_GEO:
-            selector = cls.query.with_entities(func.max(cls.year), cls.poverty_geo).group_by(cls.poverty_geo)
+            max_year_col = func.max(cls.year)
+            selector = cls.query.with_entities(max_year_col, cls.poverty_geo)
+            selector = selector.group_by(cls.poverty_geo)
             return tuple_(cls.year, cls.poverty_geo).in_(selector)
-
 
     @classmethod
     def get_supported_levels(cls):
@@ -58,6 +57,7 @@ class BasePoverty(db.Model, BaseModel):
         involved_tables = (PovertyXWalk, cls)
         return [involved_tables, cond]
 
+
 class Survey(BasePoverty):
     __tablename__ = "survey"
     median_moe = 0
@@ -65,7 +65,6 @@ class Survey(BasePoverty):
     year = db.Column(db.Integer(), primary_key=True)
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
-
 
 
 class SurveyByGender(BasePoverty):
@@ -82,6 +81,7 @@ class SurveyByGender(BasePoverty):
         base_levels = super(SurveyByGender, cls).get_supported_levels()
         return dict(base_levels, **{GENDER: ALL})
 
+
 class SurveyUrbanRural(BasePoverty):
     __tablename__ = "survey_urban_rural"
     median_moe = 2
@@ -95,5 +95,6 @@ class SurveyUrbanRural(BasePoverty):
     def get_supported_levels(cls):
         base_levels = super(SurveyUrbanRural, cls).get_supported_levels()
         return dict(base_levels, **{RURAL: ALL})
+
 
 poverty_models = [Survey, SurveyByGender, SurveyUrbanRural]

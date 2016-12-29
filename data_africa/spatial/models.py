@@ -3,8 +3,6 @@ from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1
 from data_africa.attrs.models import Geo, PovertyGeo
 
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
 
 class BaseSpatial(db.Model, BaseModel):
     __abstract__ = True
@@ -13,11 +11,13 @@ class BaseSpatial(db.Model, BaseModel):
     source_link = ''
     source_org = 'IFPRI'
 
+
 class PovertyXWalk(BaseSpatial):
     __tablename__ = "tmp_test_3"
     median_moe = 0
 
-    poverty_geo = db.Column(db.String, db.ForeignKey(PovertyGeo.id), primary_key=True)
+    poverty_geo = db.Column(db.String, db.ForeignKey(PovertyGeo.id),
+                            primary_key=True)
     geo = db.Column(db.String, db.ForeignKey(Geo.id), primary_key=True)
     st_area = db.Column(db.Float())
     pct_overlap = db.Column(db.Float())

@@ -40,6 +40,7 @@ class BaseCell5M(db.Model, BaseModel):
         elif level == 'lowest':
             return ['cropjoin', Crop, Crop.internal_id != 999]
 
+
 class HarvestedArea(BaseCell5M):
     __tablename__ = "harvested_area"
     median_moe = 0
@@ -64,6 +65,7 @@ class HarvestedArea(BaseCell5M):
         else:
             return cls.water_supply == level
 
+
 class ValueOfProduction(BaseCell5M):
     __tablename__ = "value_production"
     median_moe = 0
@@ -77,5 +79,6 @@ class ValueOfProduction(BaseCell5M):
             "crop": [ALL, 'lowest'],
             "water_supply": [ALL, OVERALL],
         }
+
 
 cell5m_models = [HarvestedArea, ValueOfProduction]
