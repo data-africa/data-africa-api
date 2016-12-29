@@ -1,9 +1,7 @@
 from flask import Blueprint, request, jsonify
-
+from data_africa.attrs.models import get_mapped_attrs
 
 mod = Blueprint('attrs', __name__, url_prefix='/attrs')
-
-from data_africa.attrs.models import get_mapped_attrs
 
 attr_map = get_mapped_attrs()
 
