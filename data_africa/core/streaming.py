@@ -13,7 +13,7 @@ def stream_qry_csv(cols, qry, api_obj):
 def stream_qry(tables, cols, data, api_obj):
     ''' Based on https://github.com/al4/orlo/blob/1b3930bae4aa37eb51aed33a97c088e576cb5a99/orlo/route_api.py#L285-L311'''
     def generate(tables):
-        headers = [col if isinstance(col, basestring) else col.key for col in cols]
+        headers = [col if not hasattr(col, "key") else col.key for col in cols]
         inf = float('inf')
 
         """

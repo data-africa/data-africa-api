@@ -204,7 +204,7 @@ class TableManager(object):
 
         if intersection:
             return len(intersection)
-        return None # TODO review this
+        return 0
 
     @classmethod
     def table_has_cols(cls, table, vars_needed):

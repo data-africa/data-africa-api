@@ -43,7 +43,7 @@ def build_api_obj(default_limit=None):
     vars_and_vals = {k:v for k,v in vars_and_vals.items() if v}
 
 
-    vars_needed = vars_and_vals.keys() + shows + values
+    vars_needed = list(vars_and_vals.keys()) + shows + values
     api_obj = ApiObject(vars_needed=vars_needed, vars_and_vals=vars_and_vals,
                         shows_and_levels=shows_and_levels, values=values,
                         where=where, force=force, order=order,
