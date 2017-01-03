@@ -16,7 +16,7 @@ def show_attrs(attr_obj, sumlevels=None):
     headers = []
     for a in attrs:
         obj = a.serialize()
-        data.append(obj.values())
+        data.append(list(obj.values()))
         if not headers:
             headers = obj.keys()
     return jsonify(data=data, headers=headers)
@@ -42,7 +42,7 @@ def attrs_by_id(kind, attr_id):
         else:
             aid_obj = attr_obj.query.get(attr_id)
         tmp = aid_obj.serialize()
-        return jsonify(data=[tmp.values()], headers=tmp.keys())
+        return jsonify(data=[list(tmp.values())], headers=tmp.keys())
     raise Exception("Invalid attribute type.")
 
 
