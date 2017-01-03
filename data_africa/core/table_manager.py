@@ -128,8 +128,8 @@ class TableManager(object):
             best_tbl = None
             for tbl in tables_to_use:
                 overlap = set(str_tbl_columns(tbl)).intersection(str_tbl_columns(cand_tbl))
-                if overlap > max_overlap:
-                    max_overlap = overlap
+                if len(overlap) > max_overlap:
+                    max_overlap = len(overlap)
                     best_tbl = tbl
             if best_tbl:
                 # TODO alias?
