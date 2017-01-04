@@ -56,7 +56,7 @@ class BaseDHS(db.Model, BaseModel):
 
 class HealthSurvey(BaseDHS):
     __tablename__ = "health_survey"
-    median_moe = 0
+    median_moe = 2
 
     year = db.Column(db.Integer(), primary_key=True)
     dhs_geo = db.Column(db.String(), primary_key=True)
