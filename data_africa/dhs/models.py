@@ -45,6 +45,8 @@ class BaseDHS(db.Model, BaseModel):
             "year": [ALL, LATEST_BY_GEO],
             "dhs_geo": [ALL, ADM0, ADM1],
             "geo": [ALL, ADM0, ADM1],
+            "severity": [ALL],
+            "condition": [ALL],
         }
 
     @classmethod
