@@ -93,24 +93,8 @@ def multitable_value_filters(tables, api_obj):
 
     for colname, val in api_obj.vars_and_vals.items():
         related_tables = tables_by_col(tables, colname)
-        if not api_obj.auto_crosswalk:
-            filts += gen_combos(related_tables, colname, val)
-        else:
-            raise Exception("test this")
-            for table in related_tables:
-                if colname == consts.YEAR and val in [consts.LATEST, consts.OLDEST]:
-                    years = TableManager.table_years[table_name(table)]
-                    my_year = years[val]
-                    filt = or_(table.year == my_year, table.year == None)
-                    api_obj.set_year(my_year)
-                else:
-                    api_obj_tmp = crosswalk(table,
-                                            ApiObject(vars_and_vals={colname: val},
-                                                      limit=None, exclude=None))
-                    new_vals = splitter(api_obj_tmp.vars_and_vals[colname])
-                    mycol = getattr(table, colname)
-                    filt = mycol.in_(new_vals)
-                filts.append(filt)
+        filts += gen_combos(related_tables, colname, val)
+
     return filts
 
 
