@@ -167,7 +167,8 @@ def gen_combos(tables, colname, val):
     elif not len(possible_combos) and len(relevant_tables) == 1:
         # if we're just referencing a single table
         safe_colname = colname.rsplit(".", 1)[-1]
-        combos.append(getattr(relevant_tables[0], safe_colname) == val)
+        val1 = splitter(val)
+        combos.append(getattr(relevant_tables[0], safe_colname).in_(val1))
     return combos
 
 def make_filter(col, cond):
