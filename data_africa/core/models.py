@@ -54,11 +54,12 @@ class ApiObject(object):
         allowed = ["vars_needed", "vars_and_vals", "values",
                    "shows_and_levels", "force", "where", "order",
                    "sort", "limit", "exclude", "auto_crosswalk",
-                   "display_names", "offset"]
+                   "display_names", "offset", "inside"]
         self._year = None
         self.auto_crosswalk = False
         self.display_names = False
         self.offset = None
+        self.inside = None
         self.vars_and_vals = {}
         for keyword, value in kwargs.items():
             if keyword in allowed:

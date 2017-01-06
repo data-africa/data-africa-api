@@ -322,6 +322,18 @@ def process_joined_filters(tables, api_obj, qry):
     #         qry = table.crosswalk(api_obj, qry)
     return qry
 
+def inside_filters(tables, api_obj):
+    if not api_obj.inside:
+        return []
+
+    filts = []
+    for attr_kind, attr_id in api_obj.inside:
+        attr_class = attr_map[attr_kind]
+        attr_obj = attr_class(id=attr_id)
+
+        return [attr_obj.child_filter(table) for table in tables if hasattr(table, attr_kind)]
+        # raise Exception(attr_kind, attr_id, result)
+    return []
 
 def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
@@ -371,7 +383,7 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
         filts += sumlevel_filtering2(table, api_obj)
 
     qry = process_joined_filters(tables, api_obj, qry)
-
+    filts += inside_filters(tables, api_obj)
     qry = qry.filter(*filts)
 
     if api_obj.limit:

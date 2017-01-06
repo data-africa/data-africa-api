@@ -27,6 +27,9 @@ def build_api_obj(default_limit=None):
     limit = request.args.get("limit", default_limit)
     offset = request.args.get("offset", None)
     exclude = request.args.get("exclude", None)
+    inside = request.args.get("inside", None)
+    if inside:
+        inside = [raw.split(":") for raw in inside.split(",")]
     auto_crosswalk = request.args.get("auto_crosswalk", False)
     display_names = request.args.get("display_names", False)
 
@@ -50,7 +53,7 @@ def build_api_obj(default_limit=None):
                         sort=sort, limit=limit, exclude=exclude,
                         auto_crosswalk=auto_crosswalk,
                         display_names=display_names,
-                        offset=offset)
+                        offset=offset, inside=inside)
     return api_obj
 
 @mod.route("/")

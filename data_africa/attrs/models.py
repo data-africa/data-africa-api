@@ -60,10 +60,22 @@ class Geo(BaseAttr):
     adm1_id = db.Column(db.Integer)
     iso3 = db.Column(db.String)
 
+    def child_filter(self, tbl):
+        if self.id.startswith("040"):
+            target = '050AF' + self.id[5:]
+            return tbl.geo.startswith(target)
+        return True
+# class DHSGeo(BaseAttr):
+#     __tablename__ = 'geo'
+#     adm0_id = db.Column(db.Integer)
+#     adm1_id = db.Column(db.Integer)
+#     iso3 = db.Column(db.String)
+
 
 class WaterSupply(BaseAttr):
     __tablename__ = 'water_supply'
 
 
 def get_mapped_attrs():
-    return {"crop": Crop, "geo": Geo, "water_supply": WaterSupply}
+    return {"crop": Crop, "geo": Geo, "water_supply": WaterSupply,
+            "poverty_geo": PovertyGeo}
