@@ -61,9 +61,10 @@ class Conditions(BaseDHS):
 
     year = db.Column(db.Integer, primary_key=True)
     dhs_geo = db.Column(db.String, primary_key=True)
+    condition = db.Column(db.String, primary_key=True)
+    severity = db.Column(db.String, primary_key=True)
     geo = column_property(DHSXWalk.geo)
-    condition = db.Column(db.String)
-    severity = db.Column(db.String)
+
     proportion_of_children = db.Column(db.Float)
 
 class ConditionsGender(BaseDHS):
@@ -72,11 +73,11 @@ class ConditionsGender(BaseDHS):
 
     year = db.Column(db.Integer, primary_key=True)
     dhs_geo = db.Column(db.String, primary_key=True)
-    geo = column_property(DHSXWalk.geo)
-    condition = db.Column(db.String)
-    severity = db.Column(db.String)
+    condition = db.Column(db.String, primary_key=True)
+    severity = db.Column(db.String, primary_key=True)
+    gender = db.Column(db.String, primary_key=True)
     proportion_of_children = db.Column(db.Float)
-    gender = db.Column(db.String)
+    geo = column_property(DHSXWalk.geo)
 
     @classmethod
     def get_supported_levels(cls):
@@ -89,9 +90,11 @@ class ConditionsResidence(BaseDHS):
 
     year = db.Column(db.Integer, primary_key=True)
     dhs_geo = db.Column(db.String, primary_key=True)
+    condition = db.Column(db.String, primary_key=True)
+    severity = db.Column(db.String, primary_key=True)
+    residence = db.Column(db.String, primary_key=True)
+
     geo = column_property(DHSXWalk.geo)
-    condition = db.Column(db.String)
-    severity = db.Column(db.String)
     proportion_of_children = db.Column(db.Float)
 
     @classmethod
