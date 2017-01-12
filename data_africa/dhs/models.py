@@ -1,8 +1,8 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1
-from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RURAL, RESIDENCE
-from data_africa.spatial.models import PovertyXWalk, DHSXWalk
+from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RESIDENCE
+from data_africa.spatial.models import DHSXWalk
 from sqlalchemy.orm import column_property
 
 from sqlalchemy import tuple_
@@ -55,6 +55,7 @@ class BaseDHS(db.Model, BaseModel):
         involved_tables = (DHSXWalk, cls)
         return [involved_tables, cond]
 
+
 class Conditions(BaseDHS):
     __tablename__ = "conditions"
     median_moe = 1
@@ -66,6 +67,7 @@ class Conditions(BaseDHS):
     geo = column_property(DHSXWalk.geo)
 
     proportion_of_children = db.Column(db.Float)
+
 
 class ConditionsGender(BaseDHS):
     __tablename__ = "conditions_gender"
@@ -84,6 +86,7 @@ class ConditionsGender(BaseDHS):
         base_levels = super(ConditionsGender, cls).get_supported_levels()
         return dict(base_levels, **{GENDER: ALL})
 
+
 class ConditionsResidence(BaseDHS):
     __tablename__ = "conditions_residence"
     median_moe = 2
@@ -101,5 +104,6 @@ class ConditionsResidence(BaseDHS):
     def get_supported_levels(cls):
         base_levels = super(ConditionsResidence, cls).get_supported_levels()
         return dict(base_levels, **{RESIDENCE: ALL})
+
 
 dhs_models = [Conditions, ConditionsGender, ConditionsResidence]
