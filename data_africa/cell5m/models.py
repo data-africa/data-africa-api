@@ -40,6 +40,10 @@ class BaseCell5M(db.Model, BaseModel):
         elif level == 'lowest':
             return ['cropjoin', Crop, Crop.internal_id != 999]
 
+    @classmethod
+    def year_filter(cls, level):
+        return True
+
 
 class HarvestedArea(BaseCell5M):
     __tablename__ = "harvested_area"
@@ -52,6 +56,7 @@ class HarvestedArea(BaseCell5M):
     @classmethod
     def get_supported_levels(cls):
         return {
+            "year": [ALL, 'latest_by_geo'],
             "geo": [ALL, ADM0, ADM1],
             "crop": [ALL, 'lowest'],
             "water_supply": [ALL, OVERALL, IRR, RFD],
@@ -75,6 +80,7 @@ class ValueOfProduction(BaseCell5M):
     @classmethod
     def get_supported_levels(cls):
         return {
+            "year": [ALL, 'latest_by_geo'],
             "geo": [ALL, ADM0, ADM1],
             "crop": [ALL, 'lowest'],
             "water_supply": [ALL, OVERALL],
