@@ -1,10 +1,6 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1
-from data_africa.attrs.consts import LATEST_BY_GEO
-
-from sqlalchemy import tuple_
-from sqlalchemy.sql import func
 
 
 class BaseClimate(db.Model, BaseModel):
@@ -26,7 +22,6 @@ class BaseClimate(db.Model, BaseModel):
     @classmethod
     def get_supported_levels(cls):
         return {
-            "year": [ALL, LATEST_BY_GEO],
             "geo": [ALL, ADM0, ADM1],
         }
 
@@ -40,5 +35,6 @@ class Rainfall(BaseClimate):
     rainfall_awa_mm = db.Column(db.Float)
     cropland_rainfallCVgt20pct_pct = db.Column(db.Float)
     cropland_rainfallCVgt30pct_ha = db.Column(db.Float)
+
 
 climate_models = [Rainfall]
