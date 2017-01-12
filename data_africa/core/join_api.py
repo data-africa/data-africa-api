@@ -5,18 +5,18 @@ import itertools
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import aliased
 
-from data_africa.core.table_manager import TableManager, table_name
+from data_africa.core.table_manager import TableManager
 
 from data_africa.util.helper import splitter
 from data_africa.attrs import consts
 
-from data_africa.core.models import ApiObject
 from data_africa.attrs.views import attr_map
 from data_africa.core.streaming import stream_qry, stream_qry_csv
 from data_africa.core.exceptions import DataAfricaException
 from data_africa.core import get_columns
 
 from data_africa.database import db
+
 
 def parse_method_and_val(cond):
     if cond.startswith("^"):
@@ -63,29 +63,33 @@ def use_attr_names(qry, cols):
         qry = qry.join(*my_joins, isouter=True)
     return qry, new_cols
 
+
 def sumlevel_filtering2(table, api_obj):
     '''This method provides the logic to handle sumlevel filtering.
     If auto-crosswalk mode is true the conditions will be simple, otherwise
-    NULLs will be allowed so that NULL rows can be retained for the result sent back to
-    the users'''
+    NULLs will be allowed so that NULL rows can be retained for the result
+    sent back to the users'''
     shows_and_levels = api_obj.shows_and_levels
     filters = []
     for col, level in shows_and_levels.items():
         args = (table, "{}_filter".format(col))
-        join_args = (table, "{}_join_filter".format(col))
+        # join_args = (table, "{}_join_filter".format(col))
         if hasattr(*args):
             func = getattr(*args)
             expr = func(level)
+            # TODO: test using .is_(None) to avoid flake8 warnings
             filters.append(or_(expr, getattr(table, col) == None))
 
     return filters
 
+
 def multitable_value_filters(tables, api_obj):
     '''This method examines the values pased in query args (e.g. year=2014 or
     geo=04000US25), and applies the logic depending on the crosswalk mode.
-    If the auto-crosswalk is not enabled, special logic (gen_combos) is required
-    to preserve null values so the user will see that no value is available.
-    Otherwise, if auto-crosswalk is enabled, treat each filter as an AND conjunction.
+    If the auto-crosswalk is not enabled, special logic (gen_combos)
+    is required to preserve null values so the user will see that no
+    value is available. Otherwise, if auto-crosswalk is enabled,
+    treat each filter as an AND conjunction.
     Return the list of filters to be applied.
     '''
     filts = []
@@ -98,7 +102,8 @@ def multitable_value_filters(tables, api_obj):
 
 
 def parse_entities(tables, api_obj):
-    '''Give a list of tables and required variables, resolve the underlying objects'''
+    '''Give a list of tables and required variables resolve
+    the underlying objects'''
     values = api_obj.vars_needed
 
     # force the primary key columns to be returned to avoid potential confusion
@@ -113,6 +118,7 @@ def parse_entities(tables, api_obj):
 
     return col_objs
 
+
 def find_overlap(tbl1, tbl2):
     '''Given two table objects, determine the set of intersecting columns by
     column name'''
@@ -121,11 +127,14 @@ def find_overlap(tbl1, tbl2):
     myset = set(cols1).intersection(cols2)
     return myset
 
+
 def has_same_levels(tbl1, tbl2, col):
-    '''Check if two tables have the same exact sumlevels for the given column'''
+    '''Check if two tables have the same exact sumlevels for the
+    given column'''
     levels1 = tbl1.get_supported_levels()[col]
     levels2 = tbl2.get_supported_levels()[col]
     return set(levels1) == set(levels2)
+
 
 def gen_combos(tables, colname, val):
     '''Generate the required logical condition combinations to optionally
@@ -138,7 +147,8 @@ def gen_combos(tables, colname, val):
         for table1, table2 in possible_combos:
             val1 = splitter(val)
             val2 = splitter(val)
-            if colname == consts.YEAR and val in [consts.LATEST, consts.OLDEST]:
+            if colname == consts.YEAR and val in [consts.LATEST,
+                                                  consts.OLDEST]:
                 years1 = TableManager.table_years[table1.full_name()]
                 years2 = TableManager.table_years[table2.full_name()]
                 val1 = [years1[val]]
@@ -153,6 +163,7 @@ def gen_combos(tables, colname, val):
         val1 = splitter(val)
         combos.append(getattr(relevant_tables[0], safe_colname).in_(val1))
     return combos
+
 
 def make_filter(col, cond):
     '''Generate SQLAlchemy filter based on string'''
@@ -175,6 +186,7 @@ def make_filter(col, cond):
         expr = ~expr
 
     return expr
+
 
 def where_filters(tables, api_obj):
     '''Process the where query argument from an API call'''
@@ -204,19 +216,6 @@ def where_filters(tables, api_obj):
                 filts.append(filt)
     return filts
 
-
-# def make_joins2(tables, api_obj, tbl_years):
-#     needing_join = [t.full_name() for t in tables[:-1]]
-#     my_joins = []
-#     filts = []
-#
-#     for tbl1 in tables:
-#         if tbl1.full_name() in needing_join:
-#             for tbl2: in tables:
-#                 if tbl1 != tbl2:
-#
-#
-#     return my_joins, filts
 
 def make_joins(tables, api_obj, tbl_years):
     '''Generate the joins required to combine tables'''
@@ -253,7 +252,6 @@ def make_joins(tables, api_obj, tbl_years):
             direct_join = getattr(tbl1, col) == getattr(tbl2, col)
             join_clause = and_(join_clause, direct_join)
 
-
         join_params = {"isouter": True, "full": True}
         my_joins.append([[tbl2, join_clause], join_params])
 
@@ -279,6 +277,7 @@ def tables_by_col(tables, col, return_first=False):
 
     return acc
 
+
 def get_column_from_tables(tables, col, return_first=True):
     '''Given a list of tables return the reference to the column in a
     list of tables'''
@@ -291,6 +290,7 @@ def get_column_from_tables(tables, col, return_first=True):
                 acc.append(getattr(table, col))
     return acc
 
+
 def handle_ordering(tables, api_obj):
     '''Process sort and order parameters from the API'''
     sort = "desc" if api_obj.sort == "desc" else "asc"
@@ -300,11 +300,11 @@ def handle_ordering(tables, api_obj):
     sort_expr = getattr(my_col, sort)()
     return sort_expr.nullslast()
 
+
 def process_joined_filters(tables, api_obj, qry):
     applied = {}
     for table in tables:
         shows_and_levels = api_obj.shows_and_levels
-        filters = []
         for col, level in shows_and_levels.items():
             args = (table, "{}_filter_join".format(col))
             if hasattr(*args):
@@ -318,18 +318,18 @@ def process_joined_filters(tables, api_obj, qry):
                         applied[join_id] = True
     return qry
 
+
 def inside_filters(tables, api_obj):
     if not api_obj.inside:
         return []
 
-    filts = []
     for attr_kind, attr_id in api_obj.inside:
         attr_class = attr_map[attr_kind]
         attr_obj = attr_class(id=attr_id)
 
         return [attr_obj.child_filter(table) for table in tables if hasattr(table, attr_kind)]
-        # raise Exception(attr_kind, attr_id, result)
     return []
+
 
 def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
@@ -346,7 +346,7 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     if joins:
         while joins:
             involved_tables, join_info = joins.pop(0)
-            kwargs = {"full": True} #{"full": True, "isouter": True}
+            kwargs = {"full": True}  # {"full": True, "isouter": True}
             tbl_a, tbl_b = involved_tables
             if not joined_tables:
                 qry = db.session.query(tbl_a).select_from(tbl_a)
