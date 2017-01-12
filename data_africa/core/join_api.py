@@ -10,7 +10,6 @@ from data_africa.core.table_manager import TableManager, table_name
 from data_africa.util.helper import splitter
 from data_africa.attrs import consts
 
-from data_africa.core.crosswalker import crosswalk
 from data_africa.core.models import ApiObject
 from data_africa.attrs.views import attr_map
 from data_africa.core.streaming import stream_qry, stream_qry_csv
@@ -317,9 +316,6 @@ def process_joined_filters(tables, api_obj, qry):
                     if join_id not in applied:
                         qry = qry.join(jtbl).filter(filts)
                         applied[join_id] = True
-    # for table in tables:
-    #     if hasattr(table, "crosswalk"):
-    #         qry = table.crosswalk(api_obj, qry)
     return qry
 
 def inside_filters(tables, api_obj):

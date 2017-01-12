@@ -6,7 +6,6 @@ from sqlalchemy.sql import func
 from data_africa.core import get_columns, str_tbl_columns
 from data_africa.core.registrar import registered_models
 from data_africa.core.exceptions import DataAfricaException
-from data_africa.core import crosswalker
 from data_africa.attrs import consts
 
 from data_africa import cache
@@ -231,13 +230,3 @@ class TableManager(object):
         if not candidates:
             raise DataAfricaException("No tables can match the specified query.")
         return candidates
-
-    @classmethod
-    def multi_crosswalk(cls, tables, api_obj):
-        for tbl in tables:
-            api_obj = crosswalker.crosswalk(tbl, api_obj)
-        return api_obj
-
-    @classmethod
-    def crosswalk(cls, table, api_obj):
-        return crosswalker.crosswalk(table, api_obj)
