@@ -87,7 +87,7 @@ class SurveyUrbanRural(BasePoverty):
     median_moe = 2
 
     year = db.Column(db.Integer(), primary_key=True)
-    rural = db.Column(db.String(), primary_key=True)
+    residence = db.Column(db.String(), primary_key=True)
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
 
