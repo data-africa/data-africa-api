@@ -32,6 +32,7 @@ class Rainfall(BaseClimate):
 
     geo = db.Column(db.String(), primary_key=True)
 
+    cropland_total_ha = db.Column(db.Float)
     rainfall_awa_mm = db.Column(db.Float)
     cropland_rainfallCVgt20pct_pct = db.Column(db.Float)
     cropland_rainfallCVgt30pct_ha = db.Column(db.Float)
