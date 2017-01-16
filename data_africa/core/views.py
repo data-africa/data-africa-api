@@ -29,6 +29,7 @@ def build_api_obj(default_limit=None):
     offset = request.args.get("offset", None)
     exclude = request.args.get("exclude", None)
     inside = request.args.get("inside", None)
+    computed = request.args.get("computed", "")
     if inside:
         inside = [raw.split(":") for raw in inside.split(",")]
     auto_crosswalk = request.args.get("auto_crosswalk", False)
@@ -53,7 +54,7 @@ def build_api_obj(default_limit=None):
                         sort=sort, limit=limit, exclude=exclude,
                         auto_crosswalk=auto_crosswalk,
                         display_names=display_names,
-                        offset=offset, inside=inside)
+                        offset=offset, inside=inside, computed=computed)
     return api_obj
 
 

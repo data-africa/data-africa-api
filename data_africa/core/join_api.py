@@ -14,6 +14,7 @@ from data_africa.attrs.views import attr_map
 from data_africa.core.streaming import stream_qry, stream_qry_csv
 from data_africa.core.exceptions import DataAfricaException
 from data_africa.core import get_columns
+from data_africa.core import compute_parser
 
 from data_africa.database import db
 
@@ -99,6 +100,29 @@ def multitable_value_filters(tables, api_obj):
         filts += gen_combos(related_tables, colname, val)
 
     return filts
+
+def process_formula(formula):
+    entities = []
+    currWord = ''
+    operators = ['*', '+', '-', '/', '(', ')']
+    while formula:
+        ltr = formula[0]
+        if ltr in operators:
+            pass
+        # formula.
+        formula = formula[1:]
+
+# def computed_columns(tables, ents, api_obj):
+#     to_compute = splitter(api_obj.computed)
+#     for raw in to_compute:
+#         if ":" in raw:
+#             formula, label = raw.split(":")
+#         else:
+#             formula, label = [raw, None]
+#
+#         # 1. remove spaces
+#         formula = formula.replace(" ", "")
+#         x = process_formula(formula)
 
 
 def parse_entities(tables, api_obj):
@@ -334,6 +358,7 @@ def inside_filters(tables, api_obj):
 def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
     cols = parse_entities(tables, api_obj)
+    cols += compute_parser.parse(cols, api_obj)
     tables = sorted(tables, key=lambda x: x.full_name())
     qry = None
     joined_tables = []
