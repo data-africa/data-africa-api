@@ -49,7 +49,7 @@ def attrs_by_id(kind, attr_id):
 
 @mod.route("/list/")
 def attrs_list():
-    return jsonify(data=attr_map.keys())
+    return jsonify(data=list(attr_map.keys()))
 
 
 @mod.route("/search/")
