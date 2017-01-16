@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from data_africa.attrs.models import get_mapped_attrs
+from data_africa.attrs import search
 
 mod = Blueprint('attrs', __name__, url_prefix='/attrs')
 
@@ -49,3 +50,9 @@ def attrs_by_id(kind, attr_id):
 @mod.route("/list/")
 def attrs_list():
     return jsonify(data=attr_map.keys())
+
+
+@mod.route("/search/")
+def search_view():
+    search_results = search.query(request.args)
+    return jsonify(search_results)
