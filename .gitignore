@@ -61,3 +61,6 @@ target/
 
 # Ignore cache folder
 cache/
+
+# pyenv environment variables
+.env
