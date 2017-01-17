@@ -1,7 +1,8 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1
-from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RESIDENCE, POVERTY_LEVEL
+from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RESIDENCE
+from data_africa.attrs.consts import POVERTY_LEVEL
 from data_africa.spatial.models import PovertyXWalk
 from sqlalchemy.orm import column_property
 
@@ -15,7 +16,6 @@ class BasePoverty(db.Model, BaseModel):
     source_title = 'Poverty Survey'
     source_link = 'http://www.harvestchoice.org/'
     source_org = 'IFPRI'
-
 
     @classmethod
     def geo_filter(cls, level):
@@ -50,11 +50,13 @@ class BasePoverty(db.Model, BaseModel):
         involved_tables = (PovertyXWalk, cls)
         return [involved_tables, cond]
 
+
 class PovertyValues(db.Model):
     __abstract__ = True
     sevpov = db.Column(db.Float)
     povgap = db.Column(db.Float)
     hc = db.Column(db.Float)
+
 
 class Survey_Yg(BasePoverty):
     __tablename__ = "survey_yg"
@@ -80,6 +82,7 @@ class Survey_Ygl(BasePoverty, PovertyValues):
         base_levels = super(Survey_Ygl, cls).get_supported_levels()
         return dict(base_levels, **{POVERTY_LEVEL: [ALL]})
 
+
 class Survey_Ygg(BasePoverty):
     __tablename__ = "survey_ygg"
     median_moe = 2
@@ -95,6 +98,7 @@ class Survey_Ygg(BasePoverty):
         base_levels = super(Survey_Ygg, cls).get_supported_levels()
         return dict(base_levels, **{GENDER: [ALL]})
 
+
 class Survey_Yggl(BasePoverty, PovertyValues):
     __tablename__ = "survey_yggl"
     median_moe = 3
@@ -104,7 +108,6 @@ class Survey_Yggl(BasePoverty, PovertyValues):
     poverty_geo = db.Column(db.String(), primary_key=True)
     poverty_level = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
-
 
     @classmethod
     def get_supported_levels(cls):
