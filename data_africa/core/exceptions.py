@@ -1,1 +1,2 @@
-class DataAfricaException(Exception): pass
+class DataAfricaException(Exception):
+    pass
