@@ -1,7 +1,7 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1
-from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RURAL
+from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RESIDENCE, POVERTY_LEVEL
 from data_africa.spatial.models import PovertyXWalk
 from sqlalchemy.orm import column_property
 
@@ -16,13 +16,6 @@ class BasePoverty(db.Model, BaseModel):
     source_link = 'http://www.harvestchoice.org/'
     source_org = 'IFPRI'
 
-    sevpov_ppp1 = db.Column(db.Float)
-    sevpov_ppp2 = db.Column(db.Float)
-    povgap_ppp1 = db.Column(db.Float)
-    povgap_ppp2 = db.Column(db.Float)
-    hc_poor1 = db.Column(db.Float)
-    hc_poor2 = db.Column(db.Float)
-    gini = db.Column(db.Float)
 
     @classmethod
     def geo_filter(cls, level):
@@ -57,44 +50,100 @@ class BasePoverty(db.Model, BaseModel):
         involved_tables = (PovertyXWalk, cls)
         return [involved_tables, cond]
 
+class PovertyValues(db.Model):
+    __abstract__ = True
+    sevpov = db.Column(db.Float)
+    povgap = db.Column(db.Float)
+    hc = db.Column(db.Float)
 
-class Survey(BasePoverty):
-    __tablename__ = "survey"
-    median_moe = 0
+class Survey_Yg(BasePoverty):
+    __tablename__ = "survey_yg"
+    median_moe = 1
 
     year = db.Column(db.Integer(), primary_key=True)
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
+    gini = db.Column(db.Float)
 
 
-class SurveyByGender(BasePoverty):
-    __tablename__ = "survey_by_gender"
+class Survey_Ygl(BasePoverty, PovertyValues):
+    __tablename__ = "survey_ygl"
+    median_moe = 2
+
+    year = db.Column(db.Integer(), primary_key=True)
+    poverty_geo = db.Column(db.String(), primary_key=True)
+    poverty_level = db.Column(db.String(), primary_key=True)
+    geo = column_property(PovertyXWalk.geo)
+
+    @classmethod
+    def get_supported_levels(cls):
+        base_levels = super(Survey_Ygl, cls).get_supported_levels()
+        return dict(base_levels, **{POVERTY_LEVEL: [ALL]})
+
+class Survey_Ygg(BasePoverty):
+    __tablename__ = "survey_ygg"
     median_moe = 2
 
     year = db.Column(db.Integer(), primary_key=True)
     gender = db.Column(db.String(), primary_key=True)
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
+    gini = db.Column(db.Float)
 
     @classmethod
     def get_supported_levels(cls):
-        base_levels = super(SurveyByGender, cls).get_supported_levels()
-        return dict(base_levels, **{GENDER: ALL})
+        base_levels = super(Survey_Ygg, cls).get_supported_levels()
+        return dict(base_levels, **{GENDER: [ALL]})
+
+class Survey_Yggl(BasePoverty, PovertyValues):
+    __tablename__ = "survey_yggl"
+    median_moe = 3
+
+    year = db.Column(db.Integer(), primary_key=True)
+    gender = db.Column(db.String(), primary_key=True)
+    poverty_geo = db.Column(db.String(), primary_key=True)
+    poverty_level = db.Column(db.String(), primary_key=True)
+    geo = column_property(PovertyXWalk.geo)
 
 
-class SurveyUrbanRural(BasePoverty):
-    __tablename__ = "survey_urban_rural"
+    @classmethod
+    def get_supported_levels(cls):
+        base_levels = super(Survey_Yggl, cls).get_supported_levels()
+        return dict(base_levels, **{GENDER: [ALL], POVERTY_LEVEL: [ALL]})
+
+
+class Survey_Ygr(BasePoverty):
+    __tablename__ = "survey_ygr"
     median_moe = 2
 
     year = db.Column(db.Integer(), primary_key=True)
     residence = db.Column(db.String(), primary_key=True)
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
+    gini = db.Column(db.Float)
 
     @classmethod
     def get_supported_levels(cls):
-        base_levels = super(SurveyUrbanRural, cls).get_supported_levels()
-        return dict(base_levels, **{RURAL: ALL})
+        base_levels = super(Survey_Ygr, cls).get_supported_levels()
+        return dict(base_levels, **{RESIDENCE: [ALL]})
 
 
-poverty_models = [Survey, SurveyByGender, SurveyUrbanRural]
+class Survey_Ygrl(BasePoverty, PovertyValues):
+    __tablename__ = "survey_ygrl"
+    median_moe = 3
+
+    year = db.Column(db.Integer(), primary_key=True)
+    residence = db.Column(db.String(), primary_key=True)
+    poverty_geo = db.Column(db.String(), primary_key=True)
+    poverty_level = db.Column(db.String(), primary_key=True)
+    geo = column_property(PovertyXWalk.geo)
+
+    @classmethod
+    def get_supported_levels(cls):
+        base_levels = super(Survey_Ygrl, cls).get_supported_levels()
+        return dict(base_levels, **{POVERTY_LEVEL: [ALL], RESIDENCE: [ALL]})
+
+
+poverty_models = [Survey_Yg, Survey_Ygl,
+                  Survey_Ygg, Survey_Yggl,
+                  Survey_Ygr, Survey_Ygrl]
