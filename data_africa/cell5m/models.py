@@ -1,6 +1,6 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
-from data_africa.attrs.consts import ALL, ADM0, ADM1, IRR, RFD, OVERALL
+from data_africa.attrs.consts import ALL, ADM0, ADM1, WATER_SUPPLY
 from data_africa.attrs.models import Crop, Geo
 from sqlalchemy.ext.declarative import declared_attr
 
@@ -44,24 +44,21 @@ class BaseCell5M(db.Model, BaseModel):
     def year_filter(cls, level):
         return True
 
-
-class HarvestedArea(BaseCell5M):
-    __tablename__ = "harvested_area"
-    median_moe = 0
-
-    water_supply = db.Column(db.String(), primary_key=True)
-
-    harvested_area = db.Column(db.Integer())
-
     @classmethod
     def get_supported_levels(cls):
         return {
             "year": [ALL, 'latest_by_geo'],
             "geo": [ALL, ADM0, ADM1],
-            "crop": [ALL, 'lowest'],
-            "water_supply": [ALL, OVERALL, IRR, RFD],
-
+            "crop": [ALL, 'lowest']
         }
+
+
+class WaterSupply(BaseCell5M):
+    __abstract__ = True
+
+    @declared_attr
+    def water_supply(cls):
+        return db.Column(db.String(), primary_key=True)
 
     @classmethod
     def water_supply_filter(cls, level):
@@ -70,21 +67,39 @@ class HarvestedArea(BaseCell5M):
         else:
             return cls.water_supply == level
 
+    @classmethod
+    def get_supported_levels(cls):
+        base_levels = super(WaterSupply, cls).get_supported_levels()
+        return dict(base_levels, **{WATER_SUPPLY: [ALL]})
+
+
+class HarvestedArea(BaseCell5M):
+    __tablename__ = "area"
+    median_moe = 1
+
+    harvested_area = db.Column(db.Integer())
+
+
+class HarvestedAreaBySupply(WaterSupply):
+    __tablename__ = "area_by_supply"
+    median_moe = 2
+
+    harvested_area = db.Column(db.Integer())
+
 
 class ValueOfProduction(BaseCell5M):
-    __tablename__ = "value_production"
-    median_moe = 0
+    __tablename__ = "value"
+    median_moe = 1
 
     value_of_production = db.Column(db.Integer())
 
-    @classmethod
-    def get_supported_levels(cls):
-        return {
-            "year": [ALL, 'latest_by_geo'],
-            "geo": [ALL, ADM0, ADM1],
-            "crop": [ALL, 'lowest'],
-            "water_supply": [ALL, OVERALL],
-        }
+
+class ValueOfProductionBySupply(WaterSupply):
+    __tablename__ = "value"
+    median_moe = 2
+
+    value_of_production = db.Column(db.Integer())
 
 
-cell5m_models = [HarvestedArea, ValueOfProduction]
+cell5m_models = [HarvestedArea, HarvestedAreaBySupply,
+                 ValueOfProduction]
