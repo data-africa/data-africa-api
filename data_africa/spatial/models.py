@@ -2,7 +2,7 @@ from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1
 from data_africa.attrs.models import Geo, PovertyGeo
-
+from geoalchemy2 import Geometry
 
 class BaseSpatial(db.Model, BaseModel):
     __abstract__ = True
@@ -11,11 +11,15 @@ class BaseSpatial(db.Model, BaseModel):
     source_link = ''
     source_org = 'IFPRI'
 
+
+class BaseXWalk(BaseSpatial):
+    __abstract__ = True
+
     st_area = db.Column(db.Float())
     pct_overlap = db.Column(db.Float())
 
 
-class PovertyXWalk(BaseSpatial):
+class PovertyXWalk(BaseXWalk):
     __tablename__ = "pov_geo_crosswalk"
     median_moe = 0
 
@@ -31,7 +35,7 @@ class PovertyXWalk(BaseSpatial):
         }
 
 
-class DHSXWalk(BaseSpatial):
+class DHSXWalk(BaseXWalk):
     __tablename__ = "dhs_geo_crosswalk"
     median_moe = 0
 
@@ -44,3 +48,10 @@ class DHSXWalk(BaseSpatial):
             "poverty_geo": [ALL, ADM0, ADM1],
             "geo": [ALL, ADM0, ADM1],
         }
+
+class Cell5M(BaseSpatial):
+    __tablename__ = "cell5m_final"
+    median_moe = 0
+
+    geo = db.Column(db.String(), db.ForeignKey(Geo.id), primary_key=True)
+    geom = db.Column(Geometry('POLYGON'))

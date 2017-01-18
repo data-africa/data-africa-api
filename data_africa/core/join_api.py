@@ -14,6 +14,7 @@ from data_africa.attrs.views import attr_map
 from data_africa.core.streaming import stream_qry, stream_qry_csv
 from data_africa.core.exceptions import DataAfricaException
 from data_africa.core import get_columns
+from data_africa.spatial.models import Cell5M
 
 from data_africa.database import db
 
@@ -330,6 +331,21 @@ def inside_filters(tables, api_obj):
         return [attr_obj.child_filter(table) for table in tables if hasattr(table, attr_kind)]
     return []
 
+def handle_neighbors(qry, tables, api_obj):
+    if not api_obj.neighbors:
+        return qry
+
+    for attr_id in api_obj.neighbors:
+        target = Cell5M.query.get(attr_id)
+        join_conds = [Cell5M.geo == tbl.geo
+                      for tbl in tables if getattr(tbl, 'geo', None)]
+        touches_filt = Cell5M.geom.ST_Touches(target.geom)
+        # -- return the geo id itself and its neighbors
+        geo_filt = or_(touches_filt, Cell5M.geo == attr_id)
+        lvl_filt = Cell5M.geo.startswith(attr_id[:3])
+        qry = qry.join(Cell5M, and_(*join_conds)).filter(geo_filt, lvl_filt)
+
+    return qry
 
 def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
@@ -380,6 +396,9 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
 
     qry = process_joined_filters(tables, api_obj, qry)
     filts += inside_filters(tables, api_obj)
+
+    qry = handle_neighbors(qry, tables, api_obj)
+
     qry = qry.filter(*filts)
 
     if api_obj.limit:
