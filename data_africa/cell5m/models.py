@@ -95,11 +95,11 @@ class ValueOfProduction(BaseCell5M):
 
 
 class ValueOfProductionBySupply(WaterSupply):
-    __tablename__ = "value"
+    __tablename__ = "value_by_supply"
     median_moe = 2
 
     value_of_production = db.Column(db.Integer())
 
 
 cell5m_models = [HarvestedArea, HarvestedAreaBySupply,
-                 ValueOfProduction]
+                 ValueOfProduction, ValueOfProductionBySupply]
