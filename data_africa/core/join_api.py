@@ -148,6 +148,7 @@ def gen_combos(tables, colname, val):
         for table1, table2 in possible_combos:
             val1 = splitter(val)
             val2 = splitter(val)
+
             if colname == consts.YEAR and val in [consts.LATEST,
                                                   consts.OLDEST]:
                 years1 = TableManager.table_years[table1.full_name()]
@@ -162,7 +163,12 @@ def gen_combos(tables, colname, val):
         # if we're just referencing a single table
         safe_colname = colname.rsplit(".", 1)[-1]
         val1 = splitter(val)
-        combos.append(getattr(relevant_tables[0], safe_colname).in_(val1))
+        tbl = relevant_tables[0]
+        if colname == consts.YEAR and val in [consts.LATEST,
+                                              consts.OLDEST]:
+            years = TableManager.table_years[tbl.full_name()]
+            val1 = [years[val]]
+        combos.append(getattr(tbl, safe_colname).in_(val1))
     return combos
 
 
