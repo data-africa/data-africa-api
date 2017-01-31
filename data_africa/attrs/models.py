@@ -59,6 +59,7 @@ class Geo(BaseAttr):
     adm0_id = db.Column(db.Integer)
     adm1_id = db.Column(db.Integer)
     iso3 = db.Column(db.String)
+    level = db.Column(db.String)
 
     def child_filter(self, tbl):
         if self.id.startswith("040"):

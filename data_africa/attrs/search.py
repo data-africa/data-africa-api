@@ -8,7 +8,10 @@ def query(query_args):
     offset = int(query_args.get('offset', 0))
     # sumlevel = query_args.get('sumlevel', None)
 
-    qry = Geo.query.filter(func.levenshtein(Geo.name, q) < 4)
+    focus_countries = ["040AF00094", "040AF00253", "040AF00170", "040AF00217", "040AF00042", "040AF00152", "040AF00270", "040AF00257", "040AF00079", "040AF00205", "040AF00182", "040AF00133"];
+
+    qry = Geo.query.filter(Geo.name.ilike("%{}%".format(q)))
+    qry = qry.filter(Geo.id.in_(focus_countries))
     qry = qry.with_entities(Geo.id, Geo.name)
     qry = qry.order_by(func.levenshtein(Geo.name, q))
     qry = qry.limit(limit).offset(offset)
