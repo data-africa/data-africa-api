@@ -10,8 +10,8 @@ CSRF_EN = True
 ''' Secret key should be set in environment var '''
 SECRET_KEY = os.environ.get("DATA_AFRICA_SECRET_KEY", "default-da-secret")
 
-''' Default debugging to True '''
-DEBUG = True
+''' Default debugging to False '''
+DEBUG = False
 SQLALCHEMY_ECHO = True
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_DATABASE_URI = "postgres://{0}:{1}@{2}/{3}".format(
