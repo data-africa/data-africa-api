@@ -29,9 +29,10 @@ class BaseClimate(db.Model, BaseModel):
 class Rainfall(BaseClimate):
     __tablename__ = "rainfall"
     median_moe = 0
-
+    year = db.Column(db.Integer, primary_key=True)
     geo = db.Column(db.String(), primary_key=True)
 
+    start_year = db.Column(db.Integer)
     cropland_total_ha = db.Column(db.Float)
     rainfall_awa_mm = db.Column(db.Float)
     cropland_rainfallCVgt20pct_pct = db.Column(db.Float)
