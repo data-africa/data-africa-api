@@ -14,6 +14,9 @@ SECRET_KEY = os.environ.get("DATA_AFRICA_SECRET_KEY", "default-da-secret")
 DEBUG = False
 SQLALCHEMY_ECHO = True
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+SQLALCHEMY_POOL_SIZE = 10
+SQLALCHEMY_POOL_RECYCLE = 3600
+SQLALCHEMY_MAX_OVERFLOW = 5
 SQLALCHEMY_DATABASE_URI = "postgres://{0}:{1}@{2}/{3}".format(
     os.environ.get("DATA_AFRICA_DB_USER", "postgres"),
     os.environ.get("DATA_AFRICA_DB_PW", ""),
