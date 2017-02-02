@@ -12,9 +12,6 @@ def query(query_args):
 
     qry = Geo.query.filter(Geo.name.ilike("%{}%".format(q)))
     qry = qry.filter(Geo.id.in_(focus_countries))
-    qry = qry.with_entities(Geo.id, Geo.name)
     qry = qry.order_by(func.levenshtein(Geo.name, q))
     qry = qry.limit(limit).offset(offset)
-    data = [[attr_id, attr_name] for attr_id, attr_name in qry]
-    headers = ["id", "name"]
-    return {"data": data, "headers": headers}
+    return qry.all()

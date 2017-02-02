@@ -54,5 +54,12 @@ def attrs_list():
 
 @mod.route("/search/")
 def search_view():
-    search_results = search.query(request.args)
-    return jsonify(search_results)
+    attrs = search.query(request.args)
+    headers = None
+    data = []
+    for a in attrs:
+        obj = a.serialize()
+        data.append(list(obj.values()))
+        if not headers:
+            headers = list(obj.keys())
+    return jsonify(data=data, headers=headers)
