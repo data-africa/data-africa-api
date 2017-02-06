@@ -4,7 +4,7 @@ from data_africa.core import table_manager
 from data_africa.core import join_api
 from data_africa.core.models import ApiObject
 from data_africa.core.exceptions import DataAfricaException
-
+from data_africa.attrs.consts import ADM0, ADM1
 
 mod = Blueprint('core', __name__, url_prefix='/api')
 
@@ -109,6 +109,21 @@ def all_table_vars():
     results = {table.full_name(): table.col_strs(short_name=True)
                for table in table_manager.registered_models}
     return jsonify(metadata=results)
+
+
+@mod.route("/geo/variables/")
+def geo_variables():
+    '''show available data tables and contained variables'''
+    geo_levels = {ADM0: set(), ADM1: set()}
+    for table in table_manager.registered_models:
+        tbl_cols = set(table.col_strs(short_name=True))
+        if table.can_show("geo", ADM0):
+            geo_levels[ADM0] = geo_levels[ADM0].union(tbl_cols)
+        if table.can_show("geo", ADM1):
+            geo_levels[ADM1] = geo_levels[ADM1].union(tbl_cols)
+    geo_levels = [{"sumlevel": key, "columns": list(value)}
+                  for key, value in geo_levels.items()]
+    return jsonify(metadata=geo_levels)
 
 
 @mod.route("/years/")
