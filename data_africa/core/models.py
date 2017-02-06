@@ -1,3 +1,5 @@
+from sqlalchemy.types import String
+
 from data_africa.core.exceptions import DataAfricaException
 from data_africa.attrs.consts import ALL, OR
 
@@ -38,7 +40,7 @@ class BaseModel(object):
         return cls.__table_args__["schema"]
 
     @classmethod
-    def col_strs(cls, short_name=False):
+    def col_strs(cls, short_name=False, measures=False):
         results = [str(col) for col in cls.__table__.columns]
         if short_name:
             results = [col_name.split(".")[-1] for col_name in results]
@@ -48,6 +50,14 @@ class BaseModel(object):
     def can_show(cls, attr, lvl):
         supported = cls.get_supported_levels()
         return attr in supported and lvl in supported[attr]
+
+    @classmethod
+    def measures(cls, short_name=False):
+        cols = cls.__table__.columns
+        results = [str(col) for col in cols if not isinstance(col.type, String)]
+        if short_name:
+            results = [col_name.split(".")[-1] for col_name in results]
+        return results
 
 class ApiObject(object):
     def __init__(self, **kwargs):

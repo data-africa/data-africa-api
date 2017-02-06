@@ -116,7 +116,7 @@ def geo_variables():
     '''show available data tables and contained variables'''
     geo_levels = {ADM0: set(), ADM1: set()}
     for table in table_manager.registered_models:
-        tbl_cols = set(table.col_strs(short_name=True))
+        tbl_cols = set(table.measures(short_name=True))
         if table.can_show("geo", ADM0):
             geo_levels[ADM0] = geo_levels[ADM0].union(tbl_cols)
         if table.can_show("geo", ADM1):
