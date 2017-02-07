@@ -38,7 +38,7 @@ class BaseCell5M(db.Model, BaseModel):
         if level == ALL:
             return None
         elif level == 'lowest':
-            return ['cropjoin', Crop, Crop.internal_id != 999]
+            return ['cropjoin', Crop, ~Crop.internal_id.in_([42, 999])]
 
     @classmethod
     def year_filter(cls, level):
