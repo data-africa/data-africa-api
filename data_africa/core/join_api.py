@@ -57,7 +57,7 @@ def use_attr_names(qry, cols):
             attr_obj = attr_map[var_name]
             attr_alias = aliased(attr_obj)
             joins[full_name] = [attr_alias, col == attr_alias.id]
-            new_cols.append(attr_alias.name.label(full_name + "_name"))
+            new_cols.append(attr_alias.name.label(var_name + "_name"))
 
         new_cols.append(col)
     for my_joins in joins.values():
@@ -388,6 +388,8 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     if not qry and len(tables) == 1:
         qry = tables[0].query
 
+    if api_obj.display_names:
+        qry, cols = use_attr_names(qry, cols)
     qry = qry.with_entities(*cols)
 
     if api_obj.order:
