@@ -1,6 +1,6 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
-from data_africa.attrs.consts import ALL, ADM0, ADM1, WATER_SUPPLY
+from data_africa.attrs.consts import ALL, ADM0, ADM1, WATER_SUPPLY, IRR, RFD
 from data_africa.attrs.models import Crop, Geo
 from sqlalchemy.ext.declarative import declared_attr
 
@@ -32,6 +32,13 @@ class BaseCell5M(db.Model, BaseModel):
             return cls.geo.startswith("040")
         elif level == ADM1:
             return cls.geo.startswith("050")
+
+    @classmethod
+    def water_supply_filter(cls, level):
+        if level == ALL:
+            return True
+        else:
+            return cls.water_supply == level
 
     @classmethod
     def crop_filter_join(cls, level):
@@ -70,7 +77,7 @@ class WaterSupply(BaseCell5M):
     @classmethod
     def get_supported_levels(cls):
         base_levels = super(WaterSupply, cls).get_supported_levels()
-        return dict(base_levels, **{WATER_SUPPLY: [ALL]})
+        return dict(base_levels, **{WATER_SUPPLY: [ALL, IRR, RFD]})
 
 
 class HarvestedArea(BaseCell5M):

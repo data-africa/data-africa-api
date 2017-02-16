@@ -2,7 +2,8 @@ from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1
 from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RESIDENCE
-from data_africa.attrs.consts import POVERTY_LEVEL
+from data_africa.attrs.consts import POVERTY_LEVEL, MALE, FEMALE
+from data_africa.attrs.consts import PPP1, PPP2, URBAN, RURAL
 from data_africa.spatial.models import PovertyXWalk
 from sqlalchemy.orm import column_property
 
@@ -80,7 +81,7 @@ class Survey_Ygl(BasePoverty, PovertyValues):
     @classmethod
     def get_supported_levels(cls):
         base_levels = super(Survey_Ygl, cls).get_supported_levels()
-        return dict(base_levels, **{POVERTY_LEVEL: [ALL]})
+        return dict(base_levels, **{POVERTY_LEVEL: [ALL, PPP1, PPP2]})
 
 
 class Survey_Ygg(BasePoverty):
@@ -96,7 +97,7 @@ class Survey_Ygg(BasePoverty):
     @classmethod
     def get_supported_levels(cls):
         base_levels = super(Survey_Ygg, cls).get_supported_levels()
-        return dict(base_levels, **{GENDER: [ALL]})
+        return dict(base_levels, **{GENDER: [ALL, MALE, FEMALE]})
 
 
 class Survey_Yggl(BasePoverty, PovertyValues):
@@ -112,7 +113,7 @@ class Survey_Yggl(BasePoverty, PovertyValues):
     @classmethod
     def get_supported_levels(cls):
         base_levels = super(Survey_Yggl, cls).get_supported_levels()
-        return dict(base_levels, **{GENDER: [ALL], POVERTY_LEVEL: [ALL]})
+        return dict(base_levels, **{GENDER: [ALL, MALE, FEMALE], POVERTY_LEVEL: [ALL, PPP1, PPP2]})
 
 
 class Survey_Ygr(BasePoverty):
@@ -128,7 +129,7 @@ class Survey_Ygr(BasePoverty):
     @classmethod
     def get_supported_levels(cls):
         base_levels = super(Survey_Ygr, cls).get_supported_levels()
-        return dict(base_levels, **{RESIDENCE: [ALL]})
+        return dict(base_levels, **{RESIDENCE: [ALL, URBAN, RURAL]})
 
 
 class Survey_Ygrl(BasePoverty, PovertyValues):
@@ -144,7 +145,7 @@ class Survey_Ygrl(BasePoverty, PovertyValues):
     @classmethod
     def get_supported_levels(cls):
         base_levels = super(Survey_Ygrl, cls).get_supported_levels()
-        return dict(base_levels, **{POVERTY_LEVEL: [ALL], RESIDENCE: [ALL]})
+        return dict(base_levels, **{POVERTY_LEVEL: [ALL, PPP1, PPP2], RESIDENCE: [ALL, URBAN, RURAL]})
 
 
 poverty_models = [Survey_Yg, Survey_Ygl,

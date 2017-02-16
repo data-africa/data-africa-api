@@ -1,7 +1,8 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
-from data_africa.attrs.consts import ALL, ADM0, ADM1
+from data_africa.attrs.consts import ALL, ADM0, ADM1, WASTED, STUNTED, UNDERWEIGHT
 from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RESIDENCE
+from data_africa.attrs.consts import URBAN, RURAL, MALE, FEMALE, MODERATE, SEVERE
 from data_africa.spatial.models import DHSXWalk
 from sqlalchemy.orm import column_property
 
@@ -19,6 +20,27 @@ class BaseDHS(db.Model, BaseModel):
     @classmethod
     def dhs_geo_filter(cls, level):
         return cls.geo_filter(level)
+
+    @classmethod
+    def gender_filter(cls, level):
+        if level == ALL:
+            return True
+        else:
+            return cls.gender == level
+
+    @classmethod
+    def condition_filter(cls, level):
+        if level == ALL:
+            return True
+        else:
+            return cls.condition == level
+
+    @classmethod
+    def severity_filter(cls, level):
+        if level == ALL:
+            return True
+        else:
+            return cls.severity == level
 
     @classmethod
     def geo_filter(cls, level):
@@ -45,8 +67,8 @@ class BaseDHS(db.Model, BaseModel):
             "year": [ALL, LATEST_BY_GEO],
             "dhs_geo": [ALL, ADM0, ADM1],
             "geo": [ALL, ADM0, ADM1],
-            "severity": [ALL],
-            "condition": [ALL],
+            "severity": [ALL, MODERATE, SEVERE],
+            "condition": [ALL, WASTED, STUNTED, UNDERWEIGHT],
         }
 
     @classmethod
@@ -84,7 +106,7 @@ class ConditionsGender(BaseDHS):
     @classmethod
     def get_supported_levels(cls):
         base_levels = super(ConditionsGender, cls).get_supported_levels()
-        return dict(base_levels, **{GENDER: ALL})
+        return dict(base_levels, **{GENDER: [ALL, MALE, FEMALE]})
 
 
 class ConditionsResidence(BaseDHS):
@@ -103,7 +125,7 @@ class ConditionsResidence(BaseDHS):
     @classmethod
     def get_supported_levels(cls):
         base_levels = super(ConditionsResidence, cls).get_supported_levels()
-        return dict(base_levels, **{RESIDENCE: ALL})
+        return dict(base_levels, **{RESIDENCE: [ALL, URBAN, RURAL]})
 
 
 dhs_models = [Conditions, ConditionsGender, ConditionsResidence]

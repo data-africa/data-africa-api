@@ -52,6 +52,14 @@ class BaseModel(object):
         return attr in supported and lvl in supported[attr]
 
     @classmethod
+    def dimensions(cls, short_name=True):
+        cols = cls.__table__.columns
+        results = [str(col) for col in cols if col.primary_key]
+        if short_name:
+            results = [col_name.split(".")[-1] for col_name in results]
+        return results
+
+    @classmethod
     def measures(cls, short_name=False):
         cols = cls.__table__.columns
         results = [str(col) for col in cols if not isinstance(col.type, String)]

@@ -114,16 +114,28 @@ def all_table_vars():
 @mod.route("/geo/variables/")
 def geo_variables():
     '''show available data tables and contained variables'''
-    geo_levels = {ADM0: set(), ADM1: set()}
+    geo_data = {}
     for table in table_manager.registered_models:
-        tbl_cols = set(table.measures(short_name=True))
-        if table.can_show("geo", ADM0):
-            geo_levels[ADM0] = geo_levels[ADM0].union(tbl_cols)
-        if table.can_show("geo", ADM1):
-            geo_levels[ADM1] = geo_levels[ADM1].union(tbl_cols)
-    geo_levels = [{"sumlevel": key, "columns": list(value)}
-                  for key, value in geo_levels.items()]
-    return jsonify(metadata=geo_levels)
+        if table.get_schema_name() == 'spatial':
+            continue
+        if table.can_show("geo", "adm0"):
+            levels = table.get_supported_levels()
+            if 'year' not in levels:
+                levels['year'] = ['all']
+
+            for col in table.measures(short_name=True):
+                if col in ['year', 'start_year']: continue
+                obj = {}
+                obj["column"] = col
+                obj["levels"] = [levels]
+
+                if col in geo_data:
+                    geo_data[col]["levels"] += [levels]
+                else:
+                    geo_data[col] = obj
+
+
+    return jsonify(metadata=[res for res in geo_data.values()])
 
 
 @mod.route("/years/")
