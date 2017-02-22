@@ -67,6 +67,7 @@ class Survey_Yg(BasePoverty):
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
     gini = db.Column(db.Float)
+    totpop = db.Column(db.Float)
 
 
 class Survey_Ygl(BasePoverty, PovertyValues):
@@ -93,6 +94,7 @@ class Survey_Ygg(BasePoverty):
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
     gini = db.Column(db.Float)
+    totpop = db.Column(db.Float)
 
     @classmethod
     def get_supported_levels(cls):
@@ -125,6 +127,7 @@ class Survey_Ygr(BasePoverty):
     poverty_geo = db.Column(db.String(), primary_key=True)
     geo = column_property(PovertyXWalk.geo)
     gini = db.Column(db.Float)
+    totpop = db.Column(db.Float)
 
     @classmethod
     def get_supported_levels(cls):
