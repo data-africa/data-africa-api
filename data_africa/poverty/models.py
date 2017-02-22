@@ -57,6 +57,7 @@ class PovertyValues(db.Model):
     sevpov = db.Column(db.Float)
     povgap = db.Column(db.Float)
     hc = db.Column(db.Float)
+    num = db.Column(db.Float)
 
 
 class Survey_Yg(BasePoverty):
