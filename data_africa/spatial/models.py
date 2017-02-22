@@ -36,7 +36,7 @@ class PovertyXWalk(BaseXWalk):
 
 
 class DHSXWalk(BaseXWalk):
-    __tablename__ = "dhs_geo_crosswalk"
+    __tablename__ = "dhs_xwalk"
     median_moe = 0
 
     dhs_geo = db.Column(db.String, primary_key=True)
@@ -45,7 +45,7 @@ class DHSXWalk(BaseXWalk):
     @classmethod
     def get_supported_levels(cls):
         return {
-            "poverty_geo": [ALL, ADM0, ADM1],
+            "dhs_geo": [ALL, ADM0, ADM1],
             "geo": [ALL, ADM0, ADM1],
         }
 
