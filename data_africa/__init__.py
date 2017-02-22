@@ -12,6 +12,9 @@ from data_africa.core.views import mod as core_module
 app.register_blueprint(attrs_module)
 app.register_blueprint(core_module)
 
+if os.environ.get("LOCAL_CORS", None):
+    from flask_cors import CORS
+    CORS(app)
 
 @app.errorhandler(500)
 def error_page(err):
