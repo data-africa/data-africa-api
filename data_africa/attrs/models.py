@@ -1,7 +1,7 @@
 '''Attribute database models'''
 from data_africa.database import db
 from sqlalchemy.dialects import postgresql
-
+from data_africa.core.models import BaseModel
 
 attr_map = {}
 
@@ -42,14 +42,19 @@ class ImageAttr(db.Model):
                 self.url_name]
 
 
-class Crop(BaseAttr):
+class Crop(BaseAttr, BaseModel):
     __tablename__ = 'crop'
-
+    median_moe = 0
     parent = db.Column(db.String)
     children = db.Column(postgresql.ARRAY(db.String))
     internal_id = db.Column(db.Integer)
-
-
+    crop = db.Column(db.String())
+    crop_parent = db.Column(db.String())
+    @classmethod
+    def get_supported_levels(cls):
+        return {
+            "crop": ['all', 'lowest']
+        }
 class PovertyGeo(BaseAttr):
     iso3 = db.Column(db.String)
 
