@@ -3,6 +3,7 @@ from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1
 from data_africa.attrs.models import Geo, PovertyGeo
 from geoalchemy2 import Geometry
+from sqlalchemy.ext.hybrid import hybrid_property
 
 class BaseSpatial(db.Model, BaseModel):
     __abstract__ = True
@@ -20,7 +21,7 @@ class BaseXWalk(BaseSpatial):
 
 
 class PovertyXWalk(BaseXWalk):
-    __tablename__ = "pov_geo_crosswalk"
+    __tablename__ = "pov_xwalk"
     median_moe = 0
 
     poverty_geo = db.Column(db.String, db.ForeignKey(PovertyGeo.id),
@@ -55,3 +56,16 @@ class Cell5M(BaseSpatial):
 
     geo = db.Column(db.String(), db.ForeignKey(Geo.id), primary_key=True)
     geom = db.Column(Geometry('POLYGON'))
+
+class DHSGeo(BaseSpatial):
+    __tablename__ = "dhs_geo"
+    median_moe = 0
+
+    iso = db.Column(db.String(), primary_key=True)
+    regcd = db.Column(db.String(), primary_key=True)
+    svyyr = db.Column(db.Integer(), primary_key=True)
+    geom = db.Column(Geometry('POLYGON'))
+
+    @hybrid_property
+    def dhs_geo(self):
+        return "050HG" + self.iso + str(int(self.regcd)).zfill(3) + str(self.svyyr)
