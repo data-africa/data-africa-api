@@ -103,7 +103,7 @@ class TableManager(object):
         return None, None, None
 
     @staticmethod
-    def is_feasible(x, y):
+    def is_feasible(vars_needed, candidates):
         return True
 
     @classmethod

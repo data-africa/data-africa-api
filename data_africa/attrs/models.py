@@ -50,6 +50,7 @@ class Crop(BaseAttr, BaseModel):
     internal_id = db.Column(db.Integer)
     crop = db.Column(db.String())
     crop_parent = db.Column(db.String())
+    crop_name = db.Column(db.String())
     @classmethod
     def get_supported_levels(cls):
         return {
