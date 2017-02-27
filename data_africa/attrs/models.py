@@ -2,6 +2,8 @@
 from data_africa.database import db
 from sqlalchemy.dialects import postgresql
 from data_africa.core.models import BaseModel
+from sqlalchemy.orm import column_property
+from sqlalchemy import select, and_
 
 attr_map = {}
 
@@ -13,6 +15,10 @@ class JoinableAttr(db.Model):
     __abstract__ = True
     __table_args__ = {"schema": "attrs"}
     median_moe = 0
+
+    @classmethod
+    def get_supported_levels(cls):
+        return {}
 
     def serialize(self):
         return {key: val for key, val in self.__dict__.items()
@@ -90,6 +96,7 @@ class Geo(BaseAttr):
     adm0_id = db.Column(db.Integer)
     adm1_id = db.Column(db.Integer)
     iso3 = db.Column(db.String)
+    iso2 = db.Column(db.String)
     level = db.Column(db.String)
     url_name = db.Column(db.String)
     parent_name = db.Column(db.String)
@@ -99,11 +106,21 @@ class Geo(BaseAttr):
             target = '050AF' + self.id[5:]
             return tbl.geo.startswith(target)
         return True
-# class DHSGeo(BaseAttr):
-#     __tablename__ = 'geo'
-#     adm0_id = db.Column(db.Integer)
-#     adm1_id = db.Column(db.Integer)
-#     iso3 = db.Column(db.String)
+
+
+class DHSGeo(JoinableAttr, BaseModel):
+    __tablename__ = 'dhs_geo'
+    dhs_geo = db.Column(db.String, primary_key=True)
+    dhs_geo_name = db.Column(db.String)
+
+    regcode = db.Column(db.String)
+    iso2 = db.Column(db.String)
+    start_year = db.Column(db.Integer)
+
+    dhs_geo_parent_name = column_property(
+        select([Geo.name])
+        .where(and_(Geo.iso2 == iso2, Geo.level == 'adm0'))
+    )
 
 
 class WaterSupply(BaseAttr):
