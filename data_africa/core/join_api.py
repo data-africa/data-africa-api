@@ -56,8 +56,10 @@ def use_attr_names(qry, cols):
         if var_name in attr_map:
             attr_obj = attr_map[var_name]
             attr_alias = aliased(attr_obj)
-            joins[full_name] = [attr_alias, col == attr_alias.id]
-            new_cols.append(attr_alias.name.label(var_name + "_name"))
+            id_col_ref = attr_alias.id if hasattr(attr_obj, "id") else getattr(attr_alias, var_name)
+            joins[full_name] = [attr_alias, col == id_col_ref]
+            name_col_ref = attr_alias.name if hasattr(attr_obj, "name") else getattr(attr_alias, "{}_name".format(var_name))
+            new_cols.append(name_col_ref.label(var_name + "_name"))
 
         new_cols.append(col)
     for my_joins in joins.values():

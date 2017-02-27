@@ -73,6 +73,10 @@ class TableManager(object):
         shows_and_levels = api_obj.shows_and_levels
         supported_levels = table.get_supported_levels()
         count = 0
+
+        if table.is_attr():
+            return True
+
         for show_col, show_level in shows_and_levels.items():
             if show_col in supported_levels and show_level in supported_levels[show_col]:
                 count += 1
@@ -106,7 +110,7 @@ class TableManager(object):
     def is_feasible(vars_needed, candidates):
         cols = []
         for tbl in candidates:
-            cols += tbl.col_strs(short_name=True)
+            cols += str_tbl_columns(tbl)
         missing = any([need not in cols for need in vars_needed])
         return not missing
 

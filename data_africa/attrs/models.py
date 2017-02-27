@@ -9,6 +9,18 @@ attr_map = {}
 def register(cls):
     attr_map[cls.__tablename__] = cls
 
+class JoinableAttr(db.Model):
+    __abstract__ = True
+    __table_args__ = {"schema": "attrs"}
+    median_moe = 0
+
+    def serialize(self):
+        return {key: val for key, val in self.__dict__.items()
+                if not key.startswith("_")}
+
+    @staticmethod
+    def is_attr():
+        return True
 
 class BaseAttr(db.Model):
     __abstract__ = True
@@ -56,8 +68,21 @@ class Crop(BaseAttr, BaseModel):
         return {
             "crop": ['all', 'lowest']
         }
-class PovertyGeo(BaseAttr):
+
+
+class PovertyGeo(JoinableAttr, BaseModel):
+    __tablename__ = 'poverty_geo'
     iso3 = db.Column(db.String)
+    poverty_geo_parent_name = db.Column(db.String)
+    poverty_geo = db.Column(db.String, primary_key=True)
+    poverty_geo_name = db.Column(db.String)
+
+    @classmethod
+    def get_supported_levels(cls):
+        return {
+            "poverty_geo": ['all', 'adm0', 'adm1']
+        }
+
 
 
 class Geo(BaseAttr):
