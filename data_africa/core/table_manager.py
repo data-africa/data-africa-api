@@ -104,7 +104,11 @@ class TableManager(object):
 
     @staticmethod
     def is_feasible(vars_needed, candidates):
-        return True
+        cols = []
+        for tbl in candidates:
+            cols += tbl.col_strs(short_name=True)
+        missing = any([need not in cols for need in vars_needed])
+        return not missing
 
     @classmethod
     def required_table_joins(cls, api_obj):
@@ -116,7 +120,6 @@ class TableManager(object):
         tables_to_use = []
         table_cols = []
         join_args = []
-        # TODO make sure query is FEASIBLE!!!
         candidates = cls.list_partial_tables(universe, api_obj)
         feasibile = cls.is_feasible(vars_needed, candidates)
 
