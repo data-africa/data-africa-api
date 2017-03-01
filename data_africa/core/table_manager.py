@@ -72,53 +72,19 @@ class TableManager(object):
     def table_can_show(cls, table, api_obj):
         shows_and_levels = api_obj.shows_and_levels
         supported_levels = table.get_supported_levels()
+        count = 0
+
+        if table.is_attr():
+            return True
 
         for show_col, show_level in shows_and_levels.items():
-            if show_col not in supported_levels:
-                # print show_col, supported_levels, "Supported Levels"
-                return False
-            else:
-                if show_level not in supported_levels[show_col]:
-                    return False
+            if show_col in supported_levels and show_level in supported_levels[show_col]:
+                count += 1
 
         if api_obj.force and table.full_name() != api_obj.force:
             return False
 
-
-        return True
-
-    @classmethod
-    def required_tables(cls, api_obj):
-        '''Given a list of X, do Y'''
-        vars_needed = api_obj.vars_needed + api_obj.where_vars()
-        if api_obj.order and api_obj.order in cls.possible_variables:
-            vars_needed = vars_needed + [api_obj.order]
-        universe = set(vars_needed)
-        tables_to_use = []
-        table_cols = []
-        # Make a set of the variables that will be needed to answer the query
-        while universe:
-            # first find the tables with biggest overlap
-            candidates = cls.list_partial_tables(universe, api_obj)
-            # raise Exception(candidates)
-            top_choices = sorted(candidates.items(), key=operator.itemgetter(1),
-                                 reverse=True)
-            # take the table with the biggest overlap
-            tbl, overlap = top_choices.pop(0)
-            # ensure the tables are joinable, for now that means
-            # having atleast one column with the same name
-            if tables_to_use:
-                while not set(table_cols).intersection([str(c.key) for c in get_columns(tbl)]):
-                    if top_choices:
-                        tbl, overlap = top_choices.pop(0)
-                    else:
-                        raise DataAfricaException("can't join tables!")
-            tables_to_use.append(tbl)
-            tmp_cols = [str(c.key) for c in get_columns(tbl)]
-            table_cols += tmp_cols
-            # remove the acquired columns from the universe
-            universe = universe - set(tmp_cols)
-        return tables_to_use
+        return count >= 1
 
     @staticmethod
     def find_max_overlap(tables_to_use, top_choices):
@@ -138,7 +104,15 @@ class TableManager(object):
                         cond = and_(cond, getattr(cand_tbl, col) == getattr(best_tbl, col))
                 join_args = [[(cand_tbl, best_tbl), cond]]
                 return cand_tbl, overlap, join_args
-        raise Exception("fail!", tables_to_use, top_choices)
+        return None, None, None
+
+    @staticmethod
+    def is_feasible(vars_needed, candidates):
+        cols = []
+        for tbl in candidates:
+            cols += str_tbl_columns(tbl)
+        missing = any([need not in cols for need in vars_needed])
+        return not missing
 
     @classmethod
     def required_table_joins(cls, api_obj):
@@ -150,28 +124,29 @@ class TableManager(object):
         tables_to_use = []
         table_cols = []
         join_args = []
+        candidates = cls.list_partial_tables(universe, api_obj)
+        feasibile = cls.is_feasible(vars_needed, candidates)
+
+        if not feasibile:
+            raise DataAfricaException("Sorry, query is not feasible!")
+
         # Make a set of the variables that will be needed to answer the query
         while universe:
             # first find the tables with biggest overlap
             candidates = cls.list_partial_tables(universe, api_obj)
             top_choices = sorted(candidates.items(), key=operator.itemgetter(1),
                                  reverse=True)
+            # raise Exception(candidates)
             # ensure the tables are joinable, for now that means
             # having atleast one column with the same name
             if tables_to_use:
                 tbl, col_overlap, tmp_joins_args = cls.find_max_overlap(tables_to_use, top_choices)
+                if not tbl: continue
                 join_args += tmp_joins_args
             else:
                 tbl = top_choices[0][0]
             tables_to_use.append(tbl)
             universe = universe - set(str_tbl_columns(tbl))
-            # if join_args:
-                # raise Exception(tables_to_use)
-            # tmp_cols = [str(c.key) for c in get_columns(tbl)]
-            # table_cols += tmp_cols
-            # remove the acquired columns from the universe
-            # universe = universe - set(tmp_cols)
-        # raise Exception(tables_to_use)
         return tables_to_use, join_args
 
     @classmethod
@@ -185,8 +160,8 @@ class TableManager(object):
                     # since larger values will be chosen first.
                     penalty = (1 - (1.0 / table.median_moe)) if table.median_moe > 0 else 0
                     candidates[table] = overlap_size - penalty
-        if not candidates:
-            raise DataAfricaException("No tables can match the specified query.")
+        # if not candidates:
+            # raise DataAfricaException("No tables can match the specified query.")
         return candidates
 
     @classmethod

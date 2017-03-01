@@ -67,6 +67,11 @@ class BaseModel(object):
             results = [col_name.split(".")[-1] for col_name in results]
         return results
 
+    @staticmethod
+    def is_attr():
+        return False
+
+
 class ApiObject(object):
     def __init__(self, **kwargs):
         allowed = ["vars_needed", "vars_and_vals", "values",

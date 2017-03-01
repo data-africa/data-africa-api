@@ -1,8 +1,10 @@
+from sqlalchemy.orm import aliased
+from sqlalchemy.ext.declarative import declared_attr
+
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, WATER_SUPPLY, IRR, RFD
 from data_africa.attrs.models import Crop, Geo
-from sqlalchemy.ext.declarative import declared_attr
 
 
 class BaseCell5M(db.Model, BaseModel):
@@ -45,7 +47,8 @@ class BaseCell5M(db.Model, BaseModel):
         if level == ALL:
             return None
         elif level == 'lowest':
-            return ['cropjoin', Crop, ~Crop.internal_id.in_([42, 999])]
+            AliasedCrop = aliased(Crop)
+            return ['cropjoin', AliasedCrop, ~AliasedCrop.internal_id.in_([42, 999])]
 
     @classmethod
     def year_filter(cls, level):
