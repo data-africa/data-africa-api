@@ -37,7 +37,7 @@ class PovertyXWalk(BaseXWalk):
 
 
 class DHSXWalk(BaseXWalk):
-    __tablename__ = "dhs_xwalk"
+    __tablename__ = "dhs_xwalk_focus"
     median_moe = 0
 
     dhs_geo = db.Column(db.String, primary_key=True)
@@ -58,7 +58,7 @@ class Cell5M(BaseSpatial):
     geom = db.Column(Geometry('POLYGON'))
 
 class DHSGeo(BaseSpatial):
-    __tablename__ = "dhs_geo"
+    __tablename__ = "dhs_geo_focus"
     median_moe = 0
 
     iso = db.Column(db.String(), primary_key=True)
