@@ -4,9 +4,9 @@ from flask import Response
 
 def stream_qry_csv(cols, qry, api_obj):
     def generate():
-        yield ','.join([col if isinstance(col, basestring) else col.key for col in cols]) + '\n'
+        yield ','.join([col if isinstance(col, str) else col.key for col in cols]) + '\n'
         for row in qry:
-            row = [u'"{}"'.format(x) if isinstance(x, basestring) else str(x) for x in list(row)]
+            row = [u'"{}"'.format(x) if isinstance(x, str) else str(x) for x in list(row)]
             yield u','.join(row) + u'\n'
     return Response(generate(), mimetype='text/csv')
 
