@@ -226,47 +226,6 @@ def where_filters(tables, api_obj):
     return filts
 
 
-def make_joins(tables, api_obj, tbl_years):
-    '''Generate the joins required to combine tables'''
-    my_joins = []
-    filts = []
-
-    tbl1 = tables[0]
-    for idx, _ in enumerate(tables[:-1]):
-        tbl2 = tables[idx + 1]
-        overlap = find_overlap(tbl1, tbl2)
-
-        # check if years overlap
-        if hasattr(tbl1, "year") and hasattr(tbl2, "year"):
-            years1 = sorted([int(v) for v in tbl_years[tbl1.full_name()].values()])
-            years1[-1] += 1
-            years2 = sorted([int(v) for v in tbl_years[tbl2.full_name()].values()])
-            years2[-1] += 1
-            years1range = range(*years1)
-            years2range = range(*years2)
-            yr_overlap = set(years1range).intersection(years2range)
-        else:
-            yr_overlap = False
-
-        if not yr_overlap:
-            api_obj.warn("Years do not overlap between {} and {}!".format(
-                tbl1.full_name(), tbl2.full_name()))
-
-        join_clause = True
-
-        for idx, col in enumerate(overlap):
-            if col == 'year':
-                continue
-
-            direct_join = getattr(tbl1, col) == getattr(tbl2, col)
-            join_clause = and_(join_clause, direct_join)
-
-        join_params = {"isouter": True, "full": True}
-        my_joins.append([[tbl2, join_clause], join_params])
-
-    return my_joins, filts
-
-
 def tables_by_col(tables, col, return_first=False):
     '''Return a table or a list of tables that contain the given column'''
     acc = []
@@ -370,8 +329,10 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     if joins:
         while joins:
             involved_tables, join_info = joins.pop(0)
-            kwargs = {"full": True}  # {"full": True, "isouter": True}
             tbl_a, tbl_b = involved_tables
+            involves_spatial = 'spatial' in [tbl_a.get_schema_name(), tbl_b.get_schema_name()]
+            needs_full = not involves_spatial
+            kwargs = {"full": True}
             if not joined_tables:
                 qry = db.session.query(tbl_a).select_from(tbl_a)
                 table_to_join = tbl_b
