@@ -36,13 +36,6 @@ class BaseCell5M(db.Model, BaseModel):
             return cls.geo.startswith("050")
 
     @classmethod
-    def water_supply_filter(cls, level):
-        if level == ALL:
-            return True
-        else:
-            return cls.water_supply == level
-
-    @classmethod
     def crop_filter_join(cls, level):
         if level == ALL:
             return None
