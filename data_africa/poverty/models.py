@@ -47,9 +47,7 @@ class BasePoverty(db.Model, BaseModel):
 
     @classmethod
     def crosswalk(cls):
-        cond = PovertyXWalk.poverty_geo == cls.poverty_geo
-        involved_tables = (PovertyXWalk, cls)
-        return [involved_tables, cond]
+        return PovertyXWalk
 
 
 class PovertyValues(db.Model):

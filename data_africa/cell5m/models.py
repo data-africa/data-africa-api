@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declared_attr
 
 from data_africa.database import db
 from data_africa.core.models import BaseModel
-from data_africa.attrs.consts import ALL, ADM0, ADM1, WATER_SUPPLY, IRR, RFD
+from data_africa.attrs.consts import ALL, ADM0, ADM1, WATER_SUPPLY, IRR, RFD, LOWEST
 from data_africa.attrs.models import Crop, Geo
 
 
@@ -36,12 +36,11 @@ class BaseCell5M(db.Model, BaseModel):
             return cls.geo.startswith("050")
 
     @classmethod
-    def crop_filter_join(cls, level):
+    def crop_val_filter(cls, level):
         if level == ALL:
             return None
-        elif level == 'lowest':
-            AliasedCrop = aliased(Crop)
-            return ['cropjoin', AliasedCrop, ~AliasedCrop.internal_id.in_([42, 999])]
+        elif level == LOWEST:
+            return ['rest', 'bapl', 'cere', 'coff', 'frui', 'mill', 'puls']
 
     @classmethod
     def year_filter(cls, level):
@@ -67,13 +66,15 @@ class WaterSupply(BaseCell5M):
     def water_supply_filter(cls, level):
         if level == ALL or not hasattr(cls, "water_supply"):
             return True
+        elif level == LOWEST:
+            return cls.water_supply != 'overall'
         else:
             return cls.water_supply == level
 
     @classmethod
     def get_supported_levels(cls):
         base_levels = super(WaterSupply, cls).get_supported_levels()
-        return dict(base_levels, **{WATER_SUPPLY: [ALL, IRR, RFD]})
+        return dict(base_levels, **{WATER_SUPPLY: [ALL, IRR, RFD, LOWEST]})
 
 
 class HarvestedArea(BaseCell5M):

@@ -78,13 +78,13 @@ class TableManager(object):
             return True
 
         for show_col, show_level in shows_and_levels.items():
-            if show_col in supported_levels and show_level in supported_levels[show_col]:
-                count += 1
+            if show_col not in supported_levels or show_level not in supported_levels[show_col]:
+                return False
 
         if api_obj.force and table.full_name() != api_obj.force:
             return False
 
-        return count >= 1
+        return True
 
     @staticmethod
     def find_max_overlap(tables_to_use, top_choices):
@@ -159,7 +159,7 @@ class TableManager(object):
                     # to break ties, we'll use median moe to penalize and subtract
                     # since larger values will be chosen first.
                     penalty = (1 - (1.0 / table.median_moe)) if table.median_moe > 0 else 0
-                    candidates[table] = overlap_size - penalty
+                    candidates[table] = overlap_size
         # if not candidates:
             # raise DataAfricaException("No tables can match the specified query.")
         return candidates

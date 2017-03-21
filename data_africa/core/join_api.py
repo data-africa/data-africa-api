@@ -86,22 +86,6 @@ def sumlevel_filtering2(table, api_obj):
     return filters
 
 
-def multitable_value_filters(tables, api_obj):
-    '''This method examines the values pased in query args (e.g. year=2014 or
-    geo=04000US25), and applies the logic depending on the crosswalk mode.
-    If the auto-crosswalk is not enabled, special logic (gen_combos)
-    is required to preserve null values so the user will see that no
-    value is available. Otherwise, if auto-crosswalk is enabled,
-    treat each filter as an AND conjunction.
-    Return the list of filters to be applied.
-    '''
-    filts = []
-
-    for colname, val in api_obj.vars_and_vals.items():
-        related_tables = tables_by_col(tables, colname)
-        filts += gen_combos(related_tables, colname, val)
-
-    return filts
 
 
 def parse_entities(tables, api_obj):
@@ -131,47 +115,6 @@ def find_overlap(tbl1, tbl2):
     return myset
 
 
-def has_same_levels(tbl1, tbl2, col):
-    '''Check if two tables have the same exact sumlevels for the
-    given column'''
-    levels1 = tbl1.get_supported_levels()[col]
-    levels2 = tbl2.get_supported_levels()[col]
-    return set(levels1) == set(levels2)
-
-
-def gen_combos(tables, colname, val):
-    '''Generate the required logical condition combinations to optionally
-    join two tables'''
-    combos = []
-    relevant_tables = tables_by_col(tables, colname)
-
-    possible_combos = list(itertools.combinations(relevant_tables, 2))
-    if len(possible_combos) > 0:
-        for table1, table2 in possible_combos:
-            val1 = splitter(val)
-            val2 = splitter(val)
-
-            if colname == consts.YEAR and val in [consts.LATEST,
-                                                  consts.OLDEST]:
-                years1 = TableManager.table_years[table1.full_name()]
-                years2 = TableManager.table_years[table2.full_name()]
-                val1 = [years1[val]]
-                val2 = [years2[val]]
-            cond1 = and_(getattr(table1, colname).in_(val1), getattr(table2, colname).in_(val2))
-            cond2 = and_(getattr(table1, colname).in_(val1), getattr(table2, colname) == None)
-            cond3 = and_(getattr(table1, colname) == None, getattr(table2, colname).in_(val2))
-            combos.append(or_(cond1, cond2, cond3))
-    elif not len(possible_combos) and len(relevant_tables) == 1:
-        # if we're just referencing a single table
-        safe_colname = colname.rsplit(".", 1)[-1]
-        val1 = splitter(val)
-        tbl = relevant_tables[0]
-        if colname == consts.YEAR and val in [consts.LATEST,
-                                              consts.OLDEST]:
-            years = TableManager.table_years[tbl.full_name()]
-            val1 = [years[val]]
-        combos.append(getattr(tbl, safe_colname).in_(val1))
-    return combos
 
 
 def make_filter(col, cond):
@@ -269,22 +212,6 @@ def handle_ordering(tables, api_obj):
     return sort_expr.nullslast()
 
 
-def process_joined_filters(tables, api_obj, qry):
-    applied = {}
-    for table in tables:
-        shows_and_levels = api_obj.shows_and_levels
-        for col, level in shows_and_levels.items():
-            args = (table, "{}_filter_join".format(col))
-            if hasattr(*args):
-                func = getattr(*args)
-                # expr = func(level)
-                result = func(level)
-                if result:
-                    join_id, jtbl, filts = result
-                    if join_id not in applied:
-                        qry = qry.join(jtbl).filter(filts)
-                        applied[join_id] = True
-    return qry
 
 
 def inside_filters(tables, api_obj):
@@ -314,40 +241,79 @@ def handle_neighbors(qry, tables, api_obj):
 
     return qry
 
+def simple_filter(qry, tables, api_obj):
+    filts = []
+    for tbl in tables:
+        cols = set(tbl.col_strs(short_name=True))
+        for col_name, val in api_obj.vars_and_vals.items():
+            if col_name == consts.YEAR and val in [consts.LATEST, consts.OLDEST]:
+                if col_name in cols:
+                    years1 = TableManager.table_years[tbl.full_name()]
+                    filts.append(tbl.year == years1[val])
+            else:
+                vals = val.split(",")
+                if col_name in cols:
+                    filts.append(getattr(tbl, col_name).in_(vals))
+    return qry.filter(*filts)
+
+def make_join_cond(tbl_a, tbl_b, api_obj):
+    a_cols = set(tbl_a.col_strs(short_name=True))
+    b_cols = tbl_b.col_strs(short_name=True)
+    overlap = a_cols.intersection(b_cols)
+
+    conds = [getattr(tbl_a, col_name) == getattr(tbl_b, col_name)
+                for col_name in overlap]
+    # TODO move to function...
+    for col_name, val in api_obj.vars_and_vals.items():
+        if col_name == consts.YEAR and val in [consts.LATEST, consts.OLDEST]:
+            if col_name in a_cols:
+                years1 = TableManager.table_years[tbl_a.full_name()]
+                conds.append(tbl_a.year == years1[val])
+            if col_name in b_cols:
+                years2 = TableManager.table_years[tbl_b.full_name()]
+                conds.append(tbl_b.year == years2[val])
+        else:
+            vals = val.split(",")
+            if col_name in a_cols:
+                conds.append(getattr(tbl_a, col_name).in_(vals))
+            if col_name in b_cols:
+                conds.append(getattr(tbl_b, col_name).in_(vals))
+    # joined filters logic
+    shows_and_levels = api_obj.shows_and_levels.items()
+    for table in [tbl_a, tbl_b]:
+        for col, level in shows_and_levels:
+            args = (table, "{}_val_filter".format(col))
+            if hasattr(*args):
+                vals = getattr(*args)(level)
+                if vals:
+                    conds.append(~getattr(table, col).in_(vals))
+    return and_(*conds)
+
 def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
     cols = parse_entities(tables, api_obj)
-    tables = sorted(tables, key=lambda x: x.full_name())
+
+    tables = sorted(tables, key=lambda x: 1 if x.is_attr() else -1)
     qry = None
     joined_tables = []
     filts = []
 
     for table in tables:
         if hasattr(table, "crosswalk"):
-            joins.insert(0, table.crosswalk())
+            tables.append(table.crosswalk())
+            joins.append(table.crosswalk())
+
+
+    qry = db.session.query(tables[0]).select_from(tables[0])
 
     if joins:
-        while joins:
-            involved_tables, join_info = joins.pop(0)
-            tbl_a, tbl_b = involved_tables
-            involves_spatial = 'spatial' in [tbl_a.get_schema_name(), tbl_b.get_schema_name()]
-            needs_full = not involves_spatial
-            kwargs = {"full": True}
-            if not joined_tables:
-                qry = db.session.query(tbl_a).select_from(tbl_a)
-                table_to_join = tbl_b
-                joined_tables += [tbl_a.full_name(), tbl_b.full_name()]
-                qry = qry.join(table_to_join, join_info, **kwargs)
-            elif tbl_b.full_name() in joined_tables and tbl_a.full_name() not in joined_tables:
-                table_to_join = tbl_a
-                joined_tables += [tbl_a.full_name()]
-                qry = qry.join(table_to_join, join_info, **kwargs)
-            elif tbl_a.full_name() in joined_tables and tbl_b.full_name() not in joined_tables:
-                table_to_join = tbl_b
-                joined_tables += [tbl_b.full_name()]
-                qry = qry.join(table_to_join, join_info, **kwargs)
-            else:
-                raise NotImplementedError("Unhandled join case!")
+        combos = list(itertools.product(tables[:1], tables[1:]))
+        for tbl_a, tbl_b in combos:
+            join_cond = make_join_cond(tbl_a, tbl_b, api_obj)
+            qry = qry.join(tbl_b, join_cond)
+    else:
+        qry = simple_filter(qry, tables, api_obj)
+
     if not qry and len(tables) == 1:
         qry = tables[0].query
 
@@ -359,13 +325,11 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
         sort_expr = handle_ordering(tables, api_obj)
         qry = qry.order_by(sort_expr)
 
-    filts += multitable_value_filters(tables, api_obj)
     filts += where_filters(tables, api_obj)
 
     for table in tables:
         filts += sumlevel_filtering2(table, api_obj)
 
-    qry = process_joined_filters(tables, api_obj, qry)
     filts += inside_filters(tables, api_obj)
 
     qry = handle_neighbors(qry, tables, api_obj)
