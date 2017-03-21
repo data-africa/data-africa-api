@@ -73,9 +73,7 @@ class BaseDHS(db.Model, BaseModel):
 
     @classmethod
     def crosswalk(cls):
-        cond = DHSXWalk.dhs_geo == cls.dhs_geo
-        involved_tables = (DHSXWalk, cls)
-        return [involved_tables, cond]
+        return DHSXWalk
 
 
 class Conditions(BaseDHS):
