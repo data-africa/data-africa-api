@@ -159,7 +159,8 @@ class TableManager(object):
                     # to break ties, we'll use median moe to penalize and subtract
                     # since larger values will be chosen first.
                     penalty = (1 - (1.0 / table.median_moe)) if table.median_moe > 0 else 0
-                    candidates[table] = overlap_size
+                    candidates[table] = overlap_size - (table.median_moe / 100.0)
+
         # if not candidates:
             # raise DataAfricaException("No tables can match the specified query.")
         return candidates
