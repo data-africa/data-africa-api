@@ -45,7 +45,9 @@ class BaseAttr(db.Model):
     def __repr__(self):
         return '<{}, id: {}, name: {}>'.format(self.__class__,
                                                self.id, self.name)
-
+    @staticmethod
+    def is_attr():
+        return True
 
 class ImageAttr(db.Model):
     __abstract__ = True

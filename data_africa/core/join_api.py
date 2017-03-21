@@ -314,10 +314,35 @@ def handle_neighbors(qry, tables, api_obj):
 
     return qry
 
+def make_join_cond(tbl_a, tbl_b, api_obj):
+    a_cols = set(tbl_a.col_strs(short_name=True))
+    b_cols = tbl_b.col_strs(short_name=True)
+    overlap = a_cols.intersection(b_cols)
+
+    conds = [getattr(tbl_a, col_name) == getattr(tbl_b, col_name)
+                for col_name in overlap]
+    # TODO move to function...support YEARS
+    for col_name, val in api_obj.vars_and_vals.items():
+        if col_name == consts.YEAR and val in [consts.LATEST, consts.OLDEST]:
+            if col_name in a_cols:
+                years1 = TableManager.table_years[tbl_a.full_name()]
+                conds.append(tbl_a.year == years1[val])
+            if col_name in b_cols:
+                years2 = TableManager.table_years[tbl_b.full_name()]
+                conds.append(tbl_b.year == years2[val])
+        else:
+            vals = val.split(",")
+            if col_name in a_cols:
+                conds.append(getattr(tbl_a, col_name).in_(vals))
+            if col_name in b_cols:
+                conds.append(getattr(tbl_b, col_name).in_(vals))
+    return and_(*conds)
+
 def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
     cols = parse_entities(tables, api_obj)
-    tables = sorted(tables, key=lambda x: x.full_name())
+
+    tables = sorted(tables, key=lambda x: 1 if x.is_attr() else -1)
     qry = None
     joined_tables = []
     filts = []
@@ -327,27 +352,40 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
             joins.insert(0, table.crosswalk())
 
     if joins:
-        while joins:
-            involved_tables, join_info = joins.pop(0)
-            tbl_a, tbl_b = involved_tables
-            involves_spatial = 'spatial' in [tbl_a.get_schema_name(), tbl_b.get_schema_name()]
-            needs_full = not involves_spatial
-            kwargs = {"full": True}
-            if not joined_tables:
-                qry = db.session.query(tbl_a).select_from(tbl_a)
-                table_to_join = tbl_b
-                joined_tables += [tbl_a.full_name(), tbl_b.full_name()]
-                qry = qry.join(table_to_join, join_info, **kwargs)
-            elif tbl_b.full_name() in joined_tables and tbl_a.full_name() not in joined_tables:
-                table_to_join = tbl_a
-                joined_tables += [tbl_a.full_name()]
-                qry = qry.join(table_to_join, join_info, **kwargs)
-            elif tbl_a.full_name() in joined_tables and tbl_b.full_name() not in joined_tables:
-                table_to_join = tbl_b
-                joined_tables += [tbl_b.full_name()]
-                qry = qry.join(table_to_join, join_info, **kwargs)
-            else:
-                raise NotImplementedError("Unhandled join case!")
+        qry = db.session.query(tables[0]).select_from(tables[0])
+        x = list(itertools.product(tables[:1], tables[1:]))
+        for tbl_a, tbl_b in x:
+            join_cond = make_join_cond(tbl_a, tbl_b, api_obj)
+            qry = qry.join(tbl_b, join_cond)
+
+    # if joins:
+    #     while joins:
+    #         involved_tables, join_info = joins.pop(0)
+    #         involved_tables = sorted(involved_tables, key=lambda x: 1 if x.is_attr() else -1)
+    #
+    #         tbl_a, tbl_b = involved_tables
+    #         involves_spatial = 'spatial' in [tbl_a.get_schema_name(), tbl_b.get_schema_name()]
+    #         needs_full = not involves_spatial and not tbl_a.is_attr() and not tbl_b.is_attr()
+    #         join_setts = {"full": needs_full}
+    #
+    #         # set join_cond to be max_overlap between table a and b
+    #
+    #
+    #         if not joined_tables:
+    #             qry = db.session.query(tbl_a).select_from(tbl_a)
+    #             table_to_join = tbl_b
+    #             joined_tables += [tbl_a.full_name(), tbl_b.full_name()]
+    #             qry = qry.join(table_to_join, join_cond, **join_setts)
+    #         elif tbl_b.full_name() in joined_tables and tbl_a.full_name() not in joined_tables:
+    #             table_to_join = tbl_a
+    #             joined_tables += [tbl_a.full_name()]
+    #             qry = qry.join(table_to_join, join_cond, **join_setts)
+    #         elif tbl_a.full_name() in joined_tables and tbl_b.full_name() not in joined_tables:
+    #             table_to_join = tbl_b
+    #             joined_tables += [tbl_b.full_name()]
+    #             qry = qry.join(table_to_join, join_cond, **join_setts)
+    #         else:
+    #             raise NotImplementedError("Unhandled join case!")
     if not qry and len(tables) == 1:
         qry = tables[0].query
 
@@ -359,7 +397,7 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
         sort_expr = handle_ordering(tables, api_obj)
         qry = qry.order_by(sort_expr)
 
-    filts += multitable_value_filters(tables, api_obj)
+    # filts += multitable_value_filters(tables, api_obj)
     filts += where_filters(tables, api_obj)
 
     for table in tables:
