@@ -1,6 +1,6 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
-from data_africa.attrs.consts import ALL, ADM0, ADM1
+from data_africa.attrs.consts import ALL, ADM0, ADM1, LATEST_BY_GEO
 
 
 class BaseClimate(db.Model, BaseModel):
@@ -23,6 +23,7 @@ class BaseClimate(db.Model, BaseModel):
     def get_supported_levels(cls):
         return {
             "geo": [ALL, ADM0, ADM1],
+            "year": [ALL, LATEST_BY_GEO]
         }
 
 
