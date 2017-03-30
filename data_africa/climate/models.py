@@ -1,6 +1,7 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1, LATEST_BY_GEO
+from sqlalchemy import or_
 
 
 class BaseClimate(db.Model, BaseModel):

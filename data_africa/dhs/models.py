@@ -7,8 +7,25 @@ from data_africa.spatial.models import DHSXWalk
 from sqlalchemy.orm import column_property
 
 from sqlalchemy import tuple_
+from sqlalchemy import or_
 from sqlalchemy.sql import func
 
+
+FOCUS_HG = [
+    "040HGBF",
+    "040HGET",
+    "040HGGH",
+    "040HGKE",
+    "040HGMW",
+    "040HGML",
+    "040HGMZ",
+    "040HGRW",
+    "040HGSN",
+    "040HGUG",
+    "040HGTZ",
+    "040HGZM",
+    "040HGNG"
+]
 
 class BaseDHS(db.Model, BaseModel):
     __abstract__ = True
@@ -47,9 +64,11 @@ class BaseDHS(db.Model, BaseModel):
         if level == ALL:
             return True
         elif level == ADM0:
-            return cls.dhs_geo.startswith("040")
+            return cls.dhs_geo.in_(FOCUS_HG)
         elif level == ADM1:
-            return cls.dhs_geo.startswith("050")
+            adm1_conds = or_(*[cls.dhs_geo.startswith("050" + g[3:]) for g in FOCUS_HG])
+            return adm1_conds
+
 
     @classmethod
     def geo_filter(cls, level):

@@ -8,6 +8,7 @@ from data_africa.spatial.models import PovertyXWalk
 from sqlalchemy.orm import column_property
 
 from sqlalchemy import tuple_
+from sqlalchemy import or_
 from sqlalchemy.sql import func
 
 FOCUS_PG = [
