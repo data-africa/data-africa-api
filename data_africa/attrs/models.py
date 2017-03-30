@@ -34,6 +34,11 @@ class BaseAttr(db.Model):
     id = db.Column(db.String(10), primary_key=True)
     name = db.Column(db.String())
     HEADERS = ["id", "name"]
+    median_moe = 0
+
+    @classmethod
+    def get_supported_levels(cls):
+        return {}
 
     def serialize(self):
         return {key: val for key, val in self.__dict__.items()
@@ -53,13 +58,6 @@ class ImageAttr(db.Model):
     __abstract__ = True
     image_link = db.Column(db.String)
     image_author = db.Column(db.String)
-    url_name = db.Column(db.String)
-
-    HEADERS = ["id", "name", "image_link", "image_author", "url_name"]
-
-    def data_serialize(self):
-        return [self.id, self.name, self.image_link, self.image_author,
-                self.url_name]
 
 
 class Crop(BaseAttr, BaseModel):
@@ -93,7 +91,7 @@ class PovertyGeo(JoinableAttr, BaseModel):
 
 
 
-class Geo(BaseAttr):
+class Geo(BaseAttr, ImageAttr, BaseModel):
     __tablename__ = 'geo'
     adm0_id = db.Column(db.Integer)
     adm1_id = db.Column(db.Integer)
@@ -102,6 +100,7 @@ class Geo(BaseAttr):
     level = db.Column(db.String)
     url_name = db.Column(db.String)
     parent_name = db.Column(db.String)
+    geo = db.Column(db.String, primary_key=True)
 
     def child_filter(self, tbl):
         if self.id.startswith("040"):
