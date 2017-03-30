@@ -50,9 +50,10 @@ class BasePoverty(db.Model, BaseModel):
         if level == ALL:
             return True
         elif level == ADM0:
-            return cls.poverty_geo.startswith("040")
+            return cls.poverty_geo.in_(FOCUS_PG)
         elif level == ADM1:
-            return cls.poverty_geo.startswith("050")
+            adm1_conds = or_(*[cls.poverty_geo.startswith("050" + g[3:]) for g in FOCUS_PG])
+            return adm1_conds
 
     @classmethod
     def year_filter(cls, level):
