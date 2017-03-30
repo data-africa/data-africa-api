@@ -10,6 +10,21 @@ from sqlalchemy.orm import column_property
 from sqlalchemy import tuple_
 from sqlalchemy.sql import func
 
+FOCUS_PG = [
+    "040PGBFA",
+    "040PGETH",
+    "040PGGHA",
+    "040PGKEN",
+    "040PGMWI",
+    "040PGMLI",
+    "040PGMOZ",
+    "040PGRWA",
+    "040PGSEN",
+    "040PGUGA",
+    "040PGTZA",
+    "040PGZMB",
+    "040PGNGA"
+]
 
 class BasePoverty(db.Model, BaseModel):
     __abstract__ = True
@@ -24,9 +39,10 @@ class BasePoverty(db.Model, BaseModel):
         if level == ALL:
             return True
         elif level == ADM0:
-            return cls.poverty_geo.startswith("040")
+            return cls.poverty_geo.in_(FOCUS_PG)
         elif level == ADM1:
-            return cls.poverty_geo.startswith("050")
+            adm1_conds = or_(*[cls.poverty_geo.startswith("050" + g[3:]) for g in FOCUS_PG])
+            return adm1_conds
 
     @classmethod
     def geo_filter(cls, level):
