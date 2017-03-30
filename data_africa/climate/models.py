@@ -12,12 +12,15 @@ class BaseClimate(db.Model, BaseModel):
 
     @classmethod
     def geo_filter(cls, level):
+        focus_countries = ["040AF00155", "040AF00094", "040AF00253", "040AF00170", "040AF00217", "040AF00042", "040AF00152", "040AF00270", "040AF00257", "040AF00079", "040AF00205", "040AF00182", "040AF00133"];
+
         if level == ALL:
             return True
         elif level == ADM0:
-            return cls.geo.startswith("040")
+            return cls.geo.in_(focus_countries)
         elif level == ADM1:
-            return cls.geo.startswith("050")
+            adm1_conds = or_(*[cls.geo.startswith("050" + g[3:]) for g in focus_countries])
+            return adm1_conds
 
     @classmethod
     def get_supported_levels(cls):
