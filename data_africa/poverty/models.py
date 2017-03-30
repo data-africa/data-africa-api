@@ -18,6 +18,16 @@ class BasePoverty(db.Model, BaseModel):
     source_link = 'http://www.harvestchoice.org/'
     source_org = 'IFPRI'
 
+
+    @classmethod
+    def poverty_geo_filter(cls, level):
+        if level == ALL:
+            return True
+        elif level == ADM0:
+            return cls.poverty_geo.startswith("040")
+        elif level == ADM1:
+            return cls.poverty_geo.startswith("050")
+
     @classmethod
     def geo_filter(cls, level):
         if level == ALL:
@@ -44,6 +54,10 @@ class BasePoverty(db.Model, BaseModel):
             "poverty_geo": [ALL, ADM0, ADM1],
             "geo": [ALL, ADM0, ADM1],
         }
+
+    @staticmethod
+    def crosswalk_cond(api_obj):
+        return "geo" in list(api_obj.shows_and_levels.keys()) + api_obj.vars_needed
 
     @classmethod
     def crosswalk(cls):

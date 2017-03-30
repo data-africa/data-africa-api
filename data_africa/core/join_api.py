@@ -300,8 +300,10 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
 
     for table in tables:
         if hasattr(table, "crosswalk"):
-            tables.append(table.crosswalk())
-            joins.append(table.crosswalk())
+            should_xwalk = True if not hasattr(table, "crosswalk_cond") else table.crosswalk_cond(api_obj)
+            if should_xwalk:
+                tables.append(table.crosswalk())
+                joins.append(table.crosswalk())
 
 
     qry = db.session.query(tables[0]).select_from(tables[0])

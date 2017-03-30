@@ -43,6 +43,15 @@ class BaseDHS(db.Model, BaseModel):
             return cls.severity == level
 
     @classmethod
+    def dhs_geo_filter(cls, level):
+        if level == ALL:
+            return True
+        elif level == ADM0:
+            return cls.dhs_geo.startswith("040")
+        elif level == ADM1:
+            return cls.dhs_geo.startswith("050")
+
+    @classmethod
     def geo_filter(cls, level):
         if level == ALL:
             return True
@@ -70,6 +79,10 @@ class BaseDHS(db.Model, BaseModel):
             "severity": [ALL, MODERATE, SEVERE],
             "condition": [ALL, WASTED, STUNTED, UNDERWEIGHT],
         }
+
+    @staticmethod
+    def crosswalk_cond(api_obj):
+        return "geo" in list(api_obj.shows_and_levels.keys()) + api_obj.vars_needed
 
     @classmethod
     def crosswalk(cls):
