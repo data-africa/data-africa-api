@@ -1,6 +1,6 @@
 # Data Africa API
 
-The Data Africa API enables access to a variety of data sources on agriculture, climate, health and poverty through a unified endpoint. For usage information, visit the [wiki](https://github.com/Datawheel/data-africa-api/wikiAPI 
+The Data Africa API enables access to a variety of data sources on agriculture, climate, health and poverty through a unified endpoint. For usage information, visit the [API wiki](https://github.com/Datawheel/data-africa-api/wiki) 
 
 ## Requirements
 
