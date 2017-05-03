@@ -18,3 +18,34 @@ a
 ```
 CREATE EXTENSION fuzzystrmatch;
 ```
+
+## Installation
+
+1. Clone the repository 
+```git clone https://github.com/alexandersimoes/dataviva.git```
+
+2. (optional, but recommended) Create a virtual environment using `virtualenv` e.g. 
+```virtualenv /path/to/Envs/data-africa-api```
+
+3. Install requirements 
+```pip install -r requirements.txt```
+
+4. Set required environment variables
+
+```
+export DATA_AFRICA_DB_NAME=data_africa
+export DATA_AFRICA_DB_USER=postgres
+export DATA_AFRICA_DB_PW=yourpasswordgoeshere
+export DATA_AFRICA_DB_HOST=127.0.0.1
+export DATA_AFRICA_PRODUCTION=True
+```
+
+5. Test run
+
+```python run.py```
+
+6. For deployment we suggest using gunicorn and the following configuration:
+
+```
+/path/to/Envs/data-africa-api/bin/gunicorn -w 4 data_africa:app -b 127.0.0.1:5000 --timeout 120
+```
