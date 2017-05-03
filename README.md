@@ -44,7 +44,7 @@ export DATA_AFRICA_PRODUCTION=True
 
 ```python run.py```
 
-6. For deployment we suggest using gunicorn and the following configuration:
+6. For deployment we suggest using either supervisor or systemd to manage the gunicorn processes, starting with the following:
 
 ```
 /path/to/Envs/data-africa-api/bin/gunicorn -w 4 data_africa:app -b 127.0.0.1:5000 --timeout 120
