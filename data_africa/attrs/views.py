@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from data_africa.attrs.models import get_mapped_attrs
 from data_africa.attrs import search
+from sqlalchemy import or_
 
 mod = Blueprint('attrs', __name__, url_prefix='/attrs')
 
@@ -37,7 +38,7 @@ def attrs(kind):
 def attrs_by_id(kind, attr_id):
     if kind in attr_map:
         attr_obj = attr_map[kind]
-        aid_obj = attr_obj.query.filter_by(id=attr_id).first()
+        aid_obj = attr_obj.query.filter(or_(attr_obj.id == attr_id, attr_obj.url_name == attr_id)).first()
         tmp = aid_obj.serialize()
         return jsonify(data=[list(tmp.values())], headers=list(tmp.keys()))
     raise Exception("Invalid attribute type.")
