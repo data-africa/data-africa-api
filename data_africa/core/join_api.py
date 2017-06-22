@@ -301,7 +301,7 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     for table in tables:
         if hasattr(table, "crosswalk"):
             should_xwalk = True if not hasattr(table, "crosswalk_cond") else table.crosswalk_cond(api_obj)
-            if should_xwalk:
+            if should_xwalk and api_obj.tries == 0:
                 tables.append(table.crosswalk())
                 joins.append(table.crosswalk())
 
@@ -337,6 +337,16 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     qry = handle_neighbors(qry, tables, api_obj)
 
     qry = qry.filter(*filts)
+
+    c = qry.count()
+    if c == 0 and api_obj.tries == 0:
+        api_obj.tries += 1
+        if "geo" in api_obj.vars_and_vals and api_obj.vars_and_vals["geo"].startswith("050AF"):
+            orig_geo = api_obj.vars_and_vals["geo"]
+            new_geo = "040AF" + api_obj.vars_and_vals["geo"][5:10]
+            api_obj.vars_and_vals["geo"] = new_geo
+            api_obj.subs["geo"] = {orig_geo: new_geo}
+            return joinable_query(tables, joins, api_obj, tbl_years, csv_format)
 
     if api_obj.limit:
         qry = qry.limit(api_obj.limit)

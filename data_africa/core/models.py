@@ -84,6 +84,7 @@ class ApiObject(object):
         self.offset = None
         self.inside = None
         self.neighbors = None
+        self.tries = 0
         self.vars_and_vals = {}
         for keyword, value in kwargs.items():
             if keyword in allowed:
