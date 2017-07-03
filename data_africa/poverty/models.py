@@ -9,7 +9,7 @@ from data_africa.attrs.models import Geo
 from sqlalchemy.orm import column_property
 
 from sqlalchemy import tuple_, select
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from sqlalchemy.sql import func
 
 FOCUS_PG = [
@@ -102,7 +102,7 @@ class Survey_Yg(BasePoverty):
     totpop = db.Column(db.Float)
     url_name = column_property(
         select([Geo.url_name])
-        .where(Geo.id == PovertyXWalk.geo)
+        .where(and_(poverty_geo == PovertyXWalk.poverty_geo, Geo.id == PovertyXWalk.geo)).limit(1)
     )
 
 class Survey_Ygl(BasePoverty, PovertyValues):
