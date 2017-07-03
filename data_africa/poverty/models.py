@@ -5,9 +5,10 @@ from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RESIDENCE
 from data_africa.attrs.consts import POVERTY_LEVEL, MALE, FEMALE
 from data_africa.attrs.consts import PPP1, PPP2, URBAN, RURAL
 from data_africa.spatial.models import PovertyXWalk
+from data_africa.attrs.models import Geo
 from sqlalchemy.orm import column_property
 
-from sqlalchemy import tuple_
+from sqlalchemy import tuple_, select
 from sqlalchemy import or_
 from sqlalchemy.sql import func
 
@@ -99,7 +100,10 @@ class Survey_Yg(BasePoverty):
     geo = column_property(PovertyXWalk.geo)
     gini = db.Column(db.Float)
     totpop = db.Column(db.Float)
-
+    url_name = column_property(
+        select([Geo.url_name])
+        .where(Geo.id == PovertyXWalk.geo)
+    )
 
 class Survey_Ygl(BasePoverty, PovertyValues):
     __tablename__ = "survey_ygl"
