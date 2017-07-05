@@ -289,6 +289,7 @@ def make_join_cond(tbl_a, tbl_b, api_obj):
                     conds.append(~getattr(table, col).in_(vals))
     return and_(*conds)
 
+
 def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     '''Entry point from the view for processing join query'''
     cols = parse_entities(tables, api_obj)
@@ -301,10 +302,11 @@ def joinable_query(tables, joins, api_obj, tbl_years, csv_format=False):
     for table in tables:
         if hasattr(table, "crosswalk"):
             should_xwalk = True if not hasattr(table, "crosswalk_cond") else table.crosswalk_cond(api_obj)
-            if should_xwalk and api_obj.tries == 0:
+            sname = table.get_schema_name()
+            if should_xwalk and api_obj.tries == 0 and sname not in joined_tables:
                 tables.append(table.crosswalk())
                 joins.append(table.crosswalk())
-
+                joined_tables.append(sname)
 
     qry = db.session.query(tables[0]).select_from(tables[0])
 
