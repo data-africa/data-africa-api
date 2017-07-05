@@ -21,7 +21,7 @@ class BaseXWalk(BaseSpatial):
 
 
 class PovertyXWalk(BaseXWalk):
-    __tablename__ = "pov_xwalk"
+    __tablename__ = "pov_xwalk2"
     median_moe = 0
 
     poverty_geo = db.Column(db.String, db.ForeignKey(PovertyGeo.poverty_geo),
