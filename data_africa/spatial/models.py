@@ -1,7 +1,7 @@
 from data_africa.database import db
 from data_africa.core.models import BaseModel
 from data_africa.attrs.consts import ALL, ADM0, ADM1
-from data_africa.attrs.models import Geo, PovertyGeo
+from data_africa.attrs.models import Geo, PovertyGeo, DHSGeo
 from geoalchemy2 import Geometry
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -40,7 +40,7 @@ class DHSXWalk(BaseXWalk):
     __tablename__ = "dhs_xwalk_focus"
     median_moe = 0
 
-    dhs_geo = db.Column(db.String, primary_key=True)
+    dhs_geo = db.Column(db.String, db.ForeignKey(DHSGeo.dhs_geo), primary_key=True)
     geo = db.Column(db.String, db.ForeignKey(Geo.id), primary_key=True)
 
     @classmethod

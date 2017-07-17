@@ -5,9 +5,10 @@ from data_africa.attrs.consts import LATEST_BY_GEO, GENDER, RESIDENCE
 from data_africa.attrs.consts import URBAN, RURAL, MALE, FEMALE, MODERATE, SEVERE
 from data_africa.spatial.models import DHSXWalk
 from sqlalchemy.orm import column_property
+from data_africa.attrs.models import Geo
 
 from sqlalchemy import tuple_
-from sqlalchemy import or_
+from sqlalchemy import or_, select, and_
 from sqlalchemy.sql import func
 
 
@@ -120,6 +121,10 @@ class Conditions(BaseDHS):
     geo = column_property(DHSXWalk.geo)
 
     proportion_of_children = db.Column(db.Float)
+    url_name = column_property(
+        select([Geo.url_name])
+        .where(and_(dhs_geo == DHSXWalk.dhs_geo, Geo.id == DHSXWalk.geo)).limit(1)
+    )
 
 
 class ConditionsGender(BaseDHS):
@@ -133,6 +138,10 @@ class ConditionsGender(BaseDHS):
     gender = db.Column(db.String, primary_key=True)
     proportion_of_children = db.Column(db.Float)
     geo = column_property(DHSXWalk.geo)
+    url_name = column_property(
+        select([Geo.url_name])
+        .where(and_(dhs_geo == DHSXWalk.dhs_geo, Geo.id == DHSXWalk.geo)).limit(1)
+    )
 
     @classmethod
     def get_supported_levels(cls):
@@ -152,6 +161,10 @@ class ConditionsResidence(BaseDHS):
 
     geo = column_property(DHSXWalk.geo)
     proportion_of_children = db.Column(db.Float)
+    url_name = column_property(
+        select([Geo.url_name])
+        .where(and_(dhs_geo == DHSXWalk.dhs_geo, Geo.id == DHSXWalk.geo)).limit(1)
+    )
 
     @classmethod
     def get_supported_levels(cls):
