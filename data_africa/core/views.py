@@ -142,3 +142,80 @@ def geo_variables():
 def years_view():
     years_data = manager.table_years_set
     return jsonify(data=years_data)
+
+
+@mod.route("/poverty/")
+def pov_map_qry():
+    from data_africa.database import db
+    import sqlalchemy
+    sumlevel = request.args.get("show", "adm0")
+    lvl_filt = "040" if sumlevel == "adm0" else "050"
+    poverty_level = request.args.get("poverty_level", "ppp2")
+    adm0_parta = ", ga.*, ga.name as geo_name, ga.parent_name as geo_parent_name" if sumlevel == "adm0" else ""
+    adm0_partb = """LEFT JOIN spatial.pov_xwalk2 x ON a.poverty_geo = x.poverty_geo
+                 LEFT JOIN attrs.geo ga ON x.geo = ga.geo""" if sumlevel == "adm0" else ""
+    sql = """SELECT a.*, attrs.* {}
+             FROM poverty.survey_ygl a
+             LEFT JOIN attrs.poverty_geo attrs ON attrs.poverty_geo = a.poverty_geo
+             {}
+             WHERE a.poverty_geo LIKE '{}%'
+             AND poverty_level=:poverty_level
+             AND year = (SELECT max(year) from poverty.survey_ygl b
+             WHERE substr(a.poverty_geo, 6, 3) = substr(b.poverty_geo, 6, 3))
+             AND substr(a.poverty_geo, 6, 3) in
+             ('BFA',
+            'ETH',
+            'GHA',
+            'KEN',
+            'MWI',
+            'MLI',
+            'MOZ',
+            'NGA',
+            'RWA',
+            'SEN',
+            'TZA',
+            'UGA',
+            'ZMB')""".format(adm0_parta, adm0_partb, lvl_filt, poverty_level)
+    results = db.engine.execute(sqlalchemy.text(sql), poverty_level=poverty_level)
+    data = [(dict(row.items())) for row in results]
+    return jsonify(data=data)
+
+
+@mod.route("/health/")
+def dhs_map_qry():
+    from data_africa.database import db
+    import sqlalchemy
+    sumlevel = request.args.get("show", "adm0")
+    lvl_filt = "040" if sumlevel == "adm0" else "050"
+    severity = request.args.get("severity", "severe")
+    condition = request.args.get("condition", "wasted")
+
+    adm0_parta = ", ga.*, ga.name as geo_name, ga.parent_name as geo_parent_name" if sumlevel == "adm0" else ""
+    adm0_partb = """LEFT JOIN spatial.dhs_xwalk_focus x ON a.dhs_geo = x.dhs_geo
+                 LEFT JOIN attrs.geo ga ON x.geo = ga.geo""" if sumlevel == "adm0" else ""
+    sql = """SELECT a.*, attrs.* {}
+             FROM health.conditions a
+             LEFT JOIN attrs.dhs_geo2 attrs ON attrs.dhs_geo = a.dhs_geo
+             {}
+             WHERE a.dhs_geo LIKE '{}%'
+             AND severity=:severity
+             AND condition=:condition
+             AND year = (SELECT max(year) from health.conditions b
+             WHERE substr(a.dhs_geo, 6, 2) = substr(b.dhs_geo, 6, 2))
+             AND substr(a.dhs_geo, 6, 2) in
+             ('NG',
+            'BF',
+            'GH',
+            'ET',
+            'ML',
+            'MW',
+            'TZ',
+            'SN',
+            'RW',
+            'UG',
+            'ZM',
+            'MZ',
+            'KE')""".format(adm0_parta, adm0_partb, lvl_filt)
+    results = db.engine.execute(sqlalchemy.text(sql), severity=severity, condition=condition)
+    data = [(dict(row.items())) for row in results]
+    return jsonify(data=data)
