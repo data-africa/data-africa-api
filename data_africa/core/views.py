@@ -195,7 +195,7 @@ def dhs_map_qry():
                  LEFT JOIN attrs.geo ga ON x.geo = ga.geo""" if sumlevel == "adm0" else ""
     sql = """SELECT a.*, attrs.* {}
              FROM health.conditions a
-             LEFT JOIN attrs.dhs_geo2 attrs ON attrs.dhs_geo = a.dhs_geo
+             LEFT JOIN attrs.dhs_geo attrs ON attrs.dhs_geo = a.dhs_geo
              {}
              WHERE a.dhs_geo LIKE '{}%'
              AND severity=:severity
