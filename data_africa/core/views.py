@@ -219,3 +219,33 @@ def dhs_map_qry():
     results = db.engine.execute(sqlalchemy.text(sql), severity=severity, condition=condition)
     data = [(dict(row.items())) for row in results]
     return jsonify(data=data)
+
+
+@mod.route("/harvested_area/")
+def ha_qry():
+    from data_africa.database import db
+    import sqlalchemy
+    sumlevel = request.args.get("show", "adm0")
+    lvl_filt = "040" if sumlevel == "adm0" else "050"
+
+    sql = """SELECT a.*, ga.*, ga.name as geo_name, ga.parent_name as geo_parent_name
+             FROM crops.area a
+             LEFT JOIN attrs.geo ga ON ga.geo = a.geo
+             WHERE a.geo LIKE '{}%'
+             AND year = (SELECT max(year) from crops.area b WHERE a.geo = b.geo)
+             AND ga.iso3 in ('BFA',
+                'ETH',
+                'GHA',
+                'KEN',
+                'MWI',
+                'MLI',
+                'MOZ',
+                'NGA',
+                'RWA',
+                'SEN',
+                'TZA',
+                'UGA',
+                'ZMB')""".format(lvl_filt)
+    results = db.engine.execute(sqlalchemy.text(sql))
+    data = [(dict(row.items())) for row in results]
+    return jsonify(data=data)
