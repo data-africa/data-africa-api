@@ -22,7 +22,7 @@ CREATE EXTENSION fuzzystrmatch;
 ## Installation
 
 1. Clone the repository 
-```git clone https://github.com/alexandersimoes/dataviva.git```
+```git clone https://github.com/data-africa/data-africa-api.git```
 
 2. (optional, but recommended) Create a virtual environment using `virtualenv` e.g. 
 ```virtualenv /path/to/Envs/data-africa-api```
